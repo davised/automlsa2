@@ -29,19 +29,29 @@ class InstallDeps(argparse.Action):
         init_logger(debug=False, quiet=False, rundir='', runid='')
         logger = logging.getLogger(__name__)
         logger.info('Checking for dependencies and installing.')
+        install = False
         if check_program('tblastn', 'tblastn', '-version'):
             logger.info('tblastn already found, skipping install.')
         else:
             install_blast(external)
+            install = True
         if check_program('mafft', 'mafft', '--version'):
             logger.info('mafft already found, skipping install.')
         else:
             install_mafft(external)
+            install = True
         if check_program('iqtree2', 'iqtree', '--version'):
             logger.info('iqtree2 already found, skipping install.')
         else:
             install_iqtree(external)
+            install = True
         validate_requirements(external)
+        if install:
+            msg = 'Please provide given path {} as the --external flag to '\
+                'use the installed programs.'
+            logger.info(msg.format(external))
+            msg = '~/.local/external will be found automatically.'
+            logger.info(msg)
         parser.exit()
 
 
