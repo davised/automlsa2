@@ -110,67 +110,34 @@ def validate_requirements(external: str = '') -> Dict[str, str]:
         end_program(78)
 
     logger.debug('Checking blastn: {}'.format(blastn))
-    try:
-        blastn_ver: bytes = subprocess.check_output([blastn, '-version'],
-                                                    stderr=subprocess.STDOUT)
-    except FileNotFoundError:
-        msg = 'Unable to find blastn executable in path or in provided dir ' \
-              '({})'
-        logger.error(msg.format(blastn))
-        msg = 'Please add blastn to your $PATH or supply a BLASTPATH in {}'
-        logger.error(msg.format(__file__))
+    if not check_program(blastn, 'blastn', '-version'):
+        msg = 'Please add blastn to your $PATH or supply the path as '\
+            '--external'
+        logger.error(msg)
         end_program(78)
-    else:
-        logger.debug('blastn found: {}'.format(blastn_ver.strip().decode()))
 
     logger.debug('Checking makeblastdb: {}'.format(makeblastdb))
-    try:
-        makeblastdb_ver: bytes = subprocess.check_output(
-            [makeblastdb, '-version'],
-            stderr=subprocess.STDOUT)
-    except FileNotFoundError:
-        msg = 'Unable to find makeblastdb executable in path or in provided '\
-              'dir ({})'
-        logger.error(msg.format(makeblastdb))
-        msg = 'Please add makeblastdb to your $PATH or supply a BLASTPATH in' \
-            '{}'
-        logger.error(msg.format(__file__))
+    if not check_program(makeblastdb, 'makeblastdb', '-version'):
+        msg = 'Please add makeblastdb to your $PATH or supply the path as '\
+            '--external'
+        logger.error(msg)
         end_program(78)
-    else:
-        logger.debug('makeblastdb found: {}'.format(
-            makeblastdb_ver.strip().decode()))
 
     # MAFFT testing
     logger.debug('Checking mafft: {}'.format(mafft))
-    try:
-        mafft_ver: bytes = subprocess.check_output([mafft, '--version'],
-                                                   stderr=subprocess.STDOUT)
-    except FileNotFoundError:
-        msg = 'Unable to find mafft executable in path or in provided dir ' \
-              '({})'
-        logger.error(msg.format(mafft))
-        msg = 'Please add mafft to your $PATH or supply a full mafft path in '\
-              '{}'
-        logger.error(msg.format(__file__))
+    if not check_program(mafft, 'mafft', '--version'):
+        msg = 'Please add mafft to your $PATH or supply the path as '\
+            '--external'
+        logger.error(msg)
         end_program(78)
-    else:
-        logger.debug('mafft found: {}'.format(mafft_ver.strip().decode()))
 
     # iqtree testing
     logger.debug('Checking iqtree: {}'.format(iqtree))
-    try:
-        iqtree_ver: bytes = subprocess.check_output([iqtree, '--version'],
-                                                    stderr=subprocess.STDOUT)
-    except FileNotFoundError:
-        msg = 'Unable to find iqtree2 executable in path or in provided dir ' \
-              '({})'
-        logger.error(msg.format(iqtree))
-        msg = 'Please add iqtree2 to your $PATH or supply a full iqtree path '\
-              'in {}'
-        logger.error(msg.format(__file__))
+    if not check_program(iqtree, 'iqtree', '--version'):
+        msg = 'Please add iqtree to your $PATH or supply the path as '\
+            '--external'
+        logger.error(msg)
         end_program(78)
-    else:
-        logger.debug('iqtree2 found: {}'.format(iqtree_ver.strip().decode()))
 
     exes: Dict[str, str] = {}
     exes['tblastn'] = tblastn
