@@ -30,7 +30,7 @@ def main() -> None:
     time.sleep(1)
 
     # CONFIGURATION SECTION ---------------------------------------------------
-    exes: Dict[str, str] = validate_requirements()
+    exes: Dict[str, str] = validate_requirements(args.external)
 
     logger.info('Reconciling configuration settings.')
     config: Dict[str, Any] = {}

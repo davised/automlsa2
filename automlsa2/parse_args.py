@@ -5,7 +5,44 @@ import logging
 import pprint
 import sys
 from .helper_functions import check_if_fasta
+from .validate_requirements import \
+    (check_program, validate_requirements, install_blast, install_mafft,
+     install_iqtree)
 from .__version__ import __version__
+
+
+class InstallDeps(argparse.Action):
+    def __init__(self, nargs='?', **kw):
+        super().__init__(nargs=nargs, **kw)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if values:
+            external = values
+        else:
+            external = os.path.join('~', '.local', 'external')
+        if '~' in external:
+            external = os.path.expanduser(external)
+        external = os.path.abspath(external)
+        if not os.path.basename(external) == 'external':
+            external = os.path.join(external, 'external')
+
+        init_logger(debug=False, quiet=False, rundir='', runid='')
+        logger = logging.getLogger(__name__)
+        logger.info('Checking for dependencies and installing.')
+        if check_program('tblastn', 'tblastn', '-version'):
+            logger.info('tblastn already found, skipping install.')
+        else:
+            install_blast(external)
+        if check_program('mafft', 'mafft', '--version'):
+            logger.info('mafft already found, skipping install.')
+        else:
+            install_mafft(external)
+        if check_program('iqtree2', 'iqtree', '--version'):
+            logger.info('iqtree2 already found, skipping install.')
+        else:
+            install_iqtree(external)
+        validate_requirements(external)
+        parser.exit()
 
 
 def config_rundir(runid: str) -> str:
@@ -139,10 +176,6 @@ def run_argparse() -> argparse.Namespace:
     parser.add_argument(
         '--allow_missing', help='Allow for N missing genes per genome. [0]',
         type=int)
-    # parser.add_argument(
-    #     '-pb', '--printblast', help='Print BLAST searches and exit. For '
-    #                                 'submitting jobs to clusters.',
-    #     action='store_true', default=False)
     parser.add_argument(
         '--outgroup', help='Name of outgroup file or strain to root on.',
         type=str)
@@ -155,7 +188,13 @@ def run_argparse() -> argparse.Namespace:
         '--checkpoint', help='Name of stage to stop computing on. [none]',
         type=str, choices=['validate', 'preblast', 'filtering', 'prealign',
                            'postalign', 'nexus', 'none'])
-    # validate, newfastas, queries, blastout, blastfilt, alignment, nexus
+    parser.add_argument(
+        '--install_deps', help='Install dependencies into given directory. '
+                               '[~/.local/external]',
+        action=InstallDeps)
+    parser.add_argument(
+        '--external', help='Path to installed external programs. '
+                           '[~/.local/external]', type=extant_file)
     parser.add_argument(
         '--debug', help='Turn on debugging messages.', action='store_true',
         default=False)
@@ -171,4 +210,6 @@ def run_argparse() -> argparse.Namespace:
     logger = logging.getLogger(__name__)
     logger.debug('Started autoMLSA.py for run: {}'.format(args.runid))
     logger.debug(pprint.pformat(vars(args)))
+    if not args.external:
+        args.external = ''
     return args

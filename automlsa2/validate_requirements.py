@@ -20,24 +20,38 @@ IQTREEVER = '2.1.1'
 EXTERNALDIR = os.path.join(os.path.expanduser('~'), '.local', 'external')
 
 
-def get_external_path() -> str:
+def get_external_path(external: str = '') -> str:
     """
     Gets path to external directory
     input  - None
     return - Path to external dir
     """
 
-    # filename: str = inspect.getframeinfo(
-    #     inspect.currentframe()).filename  # type: ignore
-    # scriptpath: str = os.path.dirname(os.path.abspath(filename))
-    # externalpath: str = os.path.join(os.path.dirname(scriptpath), 'external')
+    if not external:
+        external = EXTERNALDIR
 
-    if not os.path.exists(EXTERNALDIR):
-        os.mkdir(EXTERNALDIR)
-    return EXTERNALDIR
+    if not os.path.exists(external):
+        os.makedirs(external)
+    return external
 
 
-def validate_requirements() -> Dict[str, str]:
+def check_program(exe: str, program_name: str, version_flag: str) -> bool:
+    logger = logging.getLogger(__name__)
+    try:
+        ver: str = subprocess.run([exe, version_flag], check=True,
+                                  stdout=subprocess.PIPE, text=True,
+                                  stderr=subprocess.STDOUT).stdout
+    except FileNotFoundError:
+        msg = 'Unable to find {} executable in path or in provided dir ({})'
+        logger.error(msg.format(program_name, exe))
+        success = False
+    else:
+        logger.debug('{} found: {}'.format(program_name, ver))
+        success = True
+    return success
+
+
+def validate_requirements(external: str = '') -> Dict[str, str]:
     """
     Identifies installed software and sets paths for running
 
@@ -48,7 +62,7 @@ def validate_requirements() -> Dict[str, str]:
 
     # Set local path to blast executable DIR
     BLASTPATH: str = ''
-    externalpath = get_external_path()
+    externalpath = get_external_path(external)
     blastcheck = os.path.join(externalpath, 'ncbi-blast-{}+'.format(BLASTVER),
                               'bin')
     if os.path.exists(blastcheck):
@@ -89,18 +103,11 @@ def validate_requirements() -> Dict[str, str]:
         makeblastdb = os.path.join(BLASTPATH, makeblastdb)
 
     logger.debug('Checking tblastn: {}'.format(tblastn))
-    try:
-        tblastn_ver: bytes = subprocess.check_output([tblastn, '-version'],
-                                                     stderr=subprocess.STDOUT)
-    except FileNotFoundError:
-        msg = 'Unable to find tblastn executable in path or in provided dir ' \
-              '({})'
-        logger.error(msg.format(tblastn))
-        msg = 'Please add tblastn to your $PATH or supply a BLASTPATH in {}'
-        logger.error(msg.format(__file__))
+    if not check_program(tblastn, 'tblastn', '-version'):
+        msg = 'Please add tblastn to your $PATH or supply the path as '\
+            '--external'
+        logger.error(msg)
         end_program(78)
-    else:
-        logger.debug('tblastn found: {}'.format(tblastn_ver.strip().decode()))
 
     logger.debug('Checking blastn: {}'.format(blastn))
     try:
@@ -188,12 +195,12 @@ def download_file(out_file: str, url: str, program: str) -> None:
         logger.info('{} already downloaded.'.format(program))
 
 
-def install_blast() -> None:
+def install_blast(external: str = '') -> None:
     """
     Installs BLAST executables to external dir
     """
     logger = logging.getLogger(__name__)
-    externalpath = get_external_path()
+    externalpath = get_external_path(external)
     base_url = 'https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/{}'\
         .format(BLASTVER)
     base_file = 'ncbi-blast-{}+-x64-'.format(BLASTVER)
@@ -243,7 +250,7 @@ def install_blast() -> None:
                     'outside of autoMLSA.')
 
 
-def install_mafft() -> None:
+def install_mafft(external: str = '') -> None:
     logger = logging.getLogger(__name__)
 
     base_url = 'https://mafft.cbrc.jp/alignment/software'
@@ -260,7 +267,7 @@ def install_mafft() -> None:
                      'https://mafft.cbrc.jp/alignment/software/windows.html')
         return
 
-    externalpath = get_external_path()
+    externalpath = get_external_path(external)
     out_file = os.path.join(externalpath, base_out_file)
     tar_url = '/'.join([base_url, base_out_file])
     download_file(out_file, tar_url, 'MAFFT')
@@ -305,7 +312,7 @@ def install_mafft() -> None:
                     'ouside of autoMLSA.')
 
 
-def install_iqtree() -> None:
+def install_iqtree(external: str = '') -> None:
     logger = logging.getLogger(__name__)
 
     base_url = 'https://github.com/iqtree/iqtree2/releases/download/v{}'\
@@ -321,7 +328,7 @@ def install_iqtree() -> None:
         base_out_file = base_file + '-Windows.zip'
         md5_hash = 'f1a25e89a5c31437125ae0c666d29ee8'
 
-    externalpath = get_external_path()
+    externalpath = get_external_path(external)
     out_file = os.path.join(externalpath, base_out_file)
     tar_url = '/'.join([base_url, base_out_file])
     download_file(out_file, tar_url, 'iqtree')
