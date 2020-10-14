@@ -237,7 +237,7 @@ def validate_arguments(args: argparse.Namespace, config: dict,
         error = True
 
     logger.debug('Validated arguments:')
-    logger.debug(pprint.pformat(vars(args)))
+    logger.debug('\n' + pprint.pformat(vars(args), indent=4))
 
     write_config(args)
     if error:
