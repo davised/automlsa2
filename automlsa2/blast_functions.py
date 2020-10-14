@@ -79,7 +79,7 @@ def read_blast_results(blastfiles: List[str], coverage: int, identity: int) ->\
 
 def print_blast_summary(runid: str, blastout: pd.DataFrame, labels: List[str],
                         nallowed: int, missing_check: bool,
-                        checkpoint: bool) -> pd.DataFrame:
+                        checkpoint: bool, protect: bool) -> pd.DataFrame:
     """
     Generates summary of BLAST results.
 
@@ -192,7 +192,7 @@ def print_blast_summary(runid: str, blastout: pd.DataFrame, labels: List[str],
     if updated:
         logger.debug('Found new filtered sequences')
         logger.debug('Removing downstream files, if present')
-        remove_intermediates(runid, ['genome'])
+        remove_intermediates(runid, ['genome'], protect)
     if not updated:
         logger.debug('Found no new filtered sequences')
     json_writer(expected_filt_fn, keeps)

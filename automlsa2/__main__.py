@@ -47,11 +47,12 @@ def main() -> None:
     logger.info('Converting genome FASTA files for BLAST if necessary.')
     labels: List[str] = get_labels(args.rundir, args.fasta)
     newfastas: List[str] = convert_fasta(args.rundir, args.fasta, labels,
-                                         exes['makeblastdb'], args.runid)
+                                         exes['makeblastdb'], args.runid,
+                                         args.protect)
 
     logger.info('Extracting query FASTA files if necessary.')
     queries: List[str] = get_queries(args.runid, args.rundir, args.dups,
-                                     args.query)
+                                     args.query, args.protect)
 
     # BLAST SECTION -----------------------------------------------------------
     logger.info('Generating list of BLAST searches and outputs.')
@@ -64,7 +65,7 @@ def main() -> None:
                                                 args.identity)
     blastfilt: pd.DataFrame = print_blast_summary(
         args.runid, blastres, labels, args.allow_missing,
-        args.missing_check, args.checkpoint == 'filtering')
+        args.missing_check, args.checkpoint == 'filtering', args.protect)
     unaligned: List[str] = print_fasta_files(blastfilt, labels)
 
     # ALIGNMENT SECTION -------------------------------------------------------

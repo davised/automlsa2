@@ -15,7 +15,7 @@ from shutil import copy
 
 
 def convert_fasta(rundir: str, fastas: List[str], labels: List[str],
-                  makeblastdb: str, runid: str) -> List[str]:
+                  makeblastdb: str, runid: str, protect: bool) -> List[str]:
     """Converts fasta file with placeholder label names
 
     input - unformatted fasta files
@@ -75,7 +75,7 @@ def convert_fasta(rundir: str, fastas: List[str], labels: List[str],
     updated: bool = set(expected_fastas) != set(new_fastas)
     if updated or deleted:
         logger.debug('Found new genome files')
-        remove_intermediates(runid, ['genome'])
+        remove_intermediates(runid, ['genome'], protect)
     else:
         logger.debug('Found no new genome files')
     json_writer(expected_fastas_fn, new_fastas)
@@ -106,8 +106,8 @@ def check_hash(fasta: str, base: str, seqhash: str) -> bool:
     return deleted
 
 
-def get_queries(runid: str, rundir: str, dups: bool, queries: List[str]) -> \
-        List[str]:
+def get_queries(runid: str, rundir: str, dups: bool, queries: List[str],
+                protect: bool) -> List[str]:
     """Converts query fasta file(s) into individual fastas for BLAST
 
     input - FASTA files with queries as individual entries
@@ -245,10 +245,10 @@ def get_queries(runid: str, rundir: str, dups: bool, queries: List[str]) -> \
     if updated:
         if all(query in new_queries for query in expected_queries):
             logger.debug('Found new query sequences')
-            remove_intermediates(runid, ['query'])
+            remove_intermediates(runid, ['query'], protect)
         else:
             logger.debug('Query sequences have been removed')
-            remove_intermediates(runid, ['query', 'genome'])
+            remove_intermediates(runid, ['query', 'genome'], protect)
     else:
         logger.debug('Found no new query sequences')
     json_writer(expected_queries_fn, new_queries)

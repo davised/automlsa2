@@ -14,7 +14,17 @@ signal(SIGINT, SIG_DFL)
 SUFFIXES = ['.nsq', '.nin', '.nhr', '.nto', '.not', '.ndb', '.ntf']
 
 
-def remove_intermediates(runid: str, intermediates: List[str]) -> None:
+def remove_intermediates(runid: str, intermediates: List[str], protect: bool)\
+        -> None:
+    logger = logging.getLogger(__name__)
+    if protect:
+        msg = 'One or more intermediates of {} type need to be removed'
+        logger.info(msg.format(','.join(intermediates)))
+        msg = 'Delete the "protect" flag in the config.json file or restart '\
+            'your analysis with another runid to continue.'
+        logger.info(msg)
+        end_program(1)
+
     genome_tmpfiles = ['blast_results.tsv', 'keepsidx.json',
                        'single_copy.json', 'blast_filtered.tsv',
                        'expected_filt.json']

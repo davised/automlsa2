@@ -191,8 +191,7 @@ def run_argparse() -> argparse.Namespace:
         type=str)
     parser.add_argument(
         '--protect', help='Save files from getting overwritten. By default, '
-        'as input files update, older alignments and trees are deleted. '
-        '*NOT CURRENTLY IMPLEMENTED*',
+        'as input files update, older alignments and trees are deleted.',
         action='store_true')
     parser.add_argument(
         '--checkpoint', help='Name of stage to stop computing on. [none]',
