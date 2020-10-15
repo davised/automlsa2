@@ -7,8 +7,12 @@ import argparse
 import subprocess
 import pprint
 from typing import List, Dict, Any
-from .helper_functions import \
-    (check_if_fasta, end_program, checkpoint_reached, json_writer)
+from .helper_functions import (
+    check_if_fasta,
+    end_program,
+    checkpoint_reached,
+    json_writer
+)
 
 
 def get_fasta_list(dirpath: str, rundir: str) -> List[str]:

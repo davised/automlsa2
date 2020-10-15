@@ -2,8 +2,11 @@
 import os
 import logging
 import subprocess
-from .helper_functions import \
-    (checkpoint_reached, checkpoint_tracker, end_program)
+from .helper_functions import (
+    checkpoint_reached,
+    checkpoint_tracker,
+    end_program
+)
 from typing import List
 
 

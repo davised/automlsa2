@@ -9,9 +9,12 @@ from typing import List, Dict, Any
 from .parse_args import run_argparse
 from .validate_requirements import validate_requirements
 from .helper_functions import exit_successfully
-from .blast_functions import \
-    (read_blast_results, print_blast_summary, print_fasta_files,
-     generate_blast_list)
+from .blast_functions import (
+    read_blast_results,
+    print_blast_summary,
+    print_fasta_files,
+    generate_blast_list
+)
 from .configuration import read_config, validate_arguments, get_labels
 from .formatting import convert_fasta, get_queries
 from .mafft import run_mafft

@@ -5,9 +5,13 @@ import logging
 import pprint
 import sys
 from .helper_functions import check_if_fasta
-from .validate_requirements import \
-    (check_program, validate_requirements, install_blast, install_mafft,
-     install_iqtree)
+from .validate_requirements import (
+    check_program,
+    validate_requirements,
+    install_blast,
+    install_mafft,
+    install_iqtree
+)
 from .__version__ import __version__
 
 
@@ -146,7 +150,9 @@ def init_logger(debug: bool, quiet: bool, rundir: str, runid: str) -> \
 def run_argparse() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description='This is a rewrite of autoMLSA.pl. Generates automated '
-                    'multi-locus sequence analyses.')
+                    'multi-locus sequence analyses.',
+        epilog='Quick usage: automlsa2 --dir genomedir --query queries.fas '
+               '-t # -- runID')
     parser.add_argument(
         'runid', help='Name of the run directory.', type=str)
     parser.add_argument(

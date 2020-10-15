@@ -4,9 +4,13 @@ import os
 import json
 import glob
 from tqdm import tqdm  # type: ignore
-from .helper_functions import \
-    (generate_hash, json_writer, remove_intermediates, end_program,
-     sanitize_path)
+from .helper_functions import (
+    generate_hash,
+    json_writer,
+    remove_intermediates,
+    end_program,
+    sanitize_path
+)
 from .blast_functions import make_blast_database
 from Bio import SeqIO  # type: ignore
 from collections import defaultdict

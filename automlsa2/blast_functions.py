@@ -10,9 +10,14 @@ import multiprocessing
 import shlex
 from multiprocessing import Pool
 from typing import List, Dict, Any, DefaultDict
-from .helper_functions import \
-    (json_writer, checkpoint_reached, checkpoint_tracker, remove_intermediates,
-     end_program, SUFFIXES)
+from .helper_functions import (
+    json_writer,
+    checkpoint_reached,
+    checkpoint_tracker,
+    remove_intermediates,
+    end_program,
+    SUFFIXES
+)
 from collections import defaultdict
 from tqdm import tqdm  # type: ignore
 from signal import signal, SIGPIPE, SIGINT, SIG_DFL
