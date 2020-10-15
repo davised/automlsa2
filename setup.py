@@ -11,13 +11,16 @@ with open('automlsa2/__version__.py', 'r') as f:
 with open('README.rst', 'r', encoding='utf-8') as f:
     readme = f.read()
 
-REQUIRES = ['biopython', 'pandas', 'numpy', 'tqdm']
+REQUIRES = ['biopython >= 1.78',
+            'pandas >= 1.19.2',
+            'numpy >= 1.1.2',
+            'tqdm >= 4.50.2']
 
 kwargs = {
     'name': 'automlsa2',
     'version': version,
     'description': 'Automated Multi-Locus Sequence Analysis tool',
-    'long_description_content_type': 'text/rst',
+    'long_description_content_type': 'text/x-rst',
     'long_description': readme,
     'author': 'Edward Davis',
     'author_email': 'ed@cgrb.oregonstate.edu',
