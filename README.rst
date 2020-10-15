@@ -8,7 +8,7 @@ Installation
 ------------
 
 automlsa2 is distributed on `PyPI <https://pypi.org>`_ as a universal
-wheel and is available on Linux/macOS and Windows and supports
+wheel and is available on Linux/macOS and Windows (untested) and supports
 Python 3.7+ and PyPy.
 
 .. code-block:: bash
@@ -34,7 +34,8 @@ External programs:
 3. `IQ-TREE COVID-19 release >= 2.1.1 <http://www.iqtree.org>`_
 
 You can install external programs using the ``automlsa2 --install_deps``
-command. These will be installed to ``${HOME}/.local/external``
+command. These will be installed to ``${HOME}/.local/external`` unless
+otherwise specified.
 
 Just tell me how to run it
 --------------------------
@@ -87,7 +88,19 @@ Multiple queries targeting the same gene sequence can be used to improve
 coverage of disparate gene sequences, e.g. attempting to cover an entire
 phylum with multiple reference genomes being used.
 
+Author Contact
+--------------
+
+`Ed Davis <mailto:ed@cgrb.oregonstate.edu>`_
+
 License
 -------
 
-automlsa2 is distributed under the terms listed in the ``LICENSE`` file.
+automlsa2 is distributed under the terms listed in the ``LICENSE`` file. The
+software is free to use for non-commercial use.
+
+Copyrights
+----------
+
+Copyright (c) 2020 Oregon State University
+All Rights Reserved.
