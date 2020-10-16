@@ -66,7 +66,7 @@ def run_iqtree(threads: int, iqtree: str, nexus: str, outgroup: str) -> str:
         '-B', '1000',
         '-alrt', '1000',
         '-m', 'MFP+MERGE',
-        '-rcluster', '10',
+        '-rclusterf', '10',
         '-nt', str(threads)]
     if outgroup:
         cmd.extend(['-o', outgroup])
