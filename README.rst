@@ -93,14 +93,28 @@ Author Contact
 
 `Ed Davis <mailto:ed@cgrb.oregonstate.edu>`_
 
+Acknowledgments
+----------------
+
+Special thanks for helping me test the software and get the python code packaged:
+
+* `Alex Weisberg <https://github.com/alexweisberg>`_
+* `Shawn O'Neil <https://github.com/oneilsh>`_
+
+Also, thanks to these groups for supporting me through my scientific career:
+
+* `OSU Chang Lab <https://github.com/osuchanglab>`_
+* `Center for Genome Research and Biocomputing @ OSU <https://cgrb.oregonstate.edu>`_
+
 License
 -------
 
 automlsa2 is distributed under the terms listed in the ``LICENSE`` file. The
-software is free to use for non-commercial use.
+software is free for non-commercial use.
 
 Copyrights
 ----------
 
 Copyright (c) 2020 Oregon State University
+
 All Rights Reserved.
