@@ -7,9 +7,9 @@ automlsa2
 Installation
 ------------
 
-automlsa2 is distributed on `PyPI <https://pypi.org>`_ as a universal
-wheel and is available on Linux/macOS and Windows (untested) and supports
-Python 3.7+ and PyPy.
+automlsa2 is distributed on `PyPI <https://pypi.org/project/automlsa2/>`_ as
+a universal wheel and is available on Linux/macOS and Windows (untested) and
+supports Python 3.7+ and PyPy.
 
 .. code-block:: bash
 
@@ -87,6 +87,118 @@ sequences are added, removed, or changed, the analysis is re-done.
 Multiple queries targeting the same gene sequence can be used to improve
 coverage of disparate gene sequences, e.g. attempting to cover an entire
 phylum with multiple reference genomes being used.
+
+Usage
+-----
+
+.. code-block:: bash
+
+    $ automlsa2 -h
+    usage: automlsa2 [-h] [--query QUERY [QUERY ...]] [--files FILES [FILES ...]]
+                 [--dir DIR [DIR ...]] [-e EVALUE] [-c COVERAGE] [-i IDENTITY]
+                 [-p {blastn,tblastn}] [--config CONFIG] [--missing_check]
+                 [-t THREADS] [--dups] [--allow_missing ALLOW_MISSING]
+                 [--outgroup OUTGROUP] [--protect]
+                 [--checkpoint {validate,preblast,filtering,prealign,postalign,nexus,none}]
+                 [--install_deps [INSTALL_DEPS]] [--external EXTERNAL]
+                 [--debug] [--version] [--quiet]
+                 runid
+
+    This is a rewrite of autoMLSA.pl. Generates automated multi-locus sequence analyses.
+
+    positional arguments:
+      runid                 Name of the run directory.
+
+optional arguments:
+
+-h, --help            show this help message and exit
+--query <QUERY [QUERY ...]>
+                      Path to file with input seq(s).
+--files <FILES [FILES ...]>
+                      Path to the target genome FASTA files.
+--dir <DIR [DIR ...]>
+                      Path to the target genome directory with FASTA files.
+-e EVALUE, --evalue EVALUE
+                      E-value cutoff for BLAST searches. [1e-5]
+-c COVERAGE, --coverage COVERAGE
+                      Sets the coverage cut-off threshold. [50]
+-i IDENTITY, --identity IDENTITY
+                      Sets the identity cut-off threshold. [30]
+-p PROGRAM, --program PROGRAM
+                      Which BLAST program to run. [tblastn]
+                      {tblastn, blastn}
+--config CONFIG       Path to configuration json file to copy.
+--missing_check       Use this to confirm that settings have been checked when
+                      genes are missing.
+-t THREADS, --threads THREADS
+                      Number of threads to use. [1]
+--dups                Allow for duplicate query names for more sequence
+                      coverage across disparate organisms.
+--allow_missing ALLOW_MISSING
+                      Allow for N missing genes per genome. [0]
+--outgroup OUTGROUP   Name of outgroup file or strain to root on.
+--protect             Save files from getting overwritten. By default, as input
+                      files update, older alignments and trees are deleted.
+--checkpoint CHECKPOINT
+                      Name of stage to stop computing on. [none]
+                      {validate,preblast,filtering,prealign,postalign,nexus,none}
+--install_deps <[INSTALL_DEPS]>
+                      Install dependencies into given directory. [~/.local/external]
+--external EXTERNAL   Path to installed external programs. [~/.local/external]
+--debug               Turn on debugging messages.
+--version             show program's version number and exit
+--quiet               Turn off progress messages.
+
+One or more input target genome FASTA files is required, either using
+``--files`` or ``--dir``. Additionally, one or more query FASTA files
+containing one or more query gene sequences is necessary for analysis.
+
+By default, protein queries are expected, and nucleotide FASTA sequence is
+required for the target genomes. ``tblastn`` is used to target the genome
+seuqences using the amino acid queries. ``blastn`` is also available, targeting
+the genome sequences using nucleotide queries.
+
+Threads will speed things up significantly. BLAST searches are threaded in
+python; submitting multiple threads to the blast executable often does not
+result in much speed up, so each BLAST search is run with one CPU given.
+
+Query marker genes often come from a well-studied representative of, at most,
+the same genus. Intergenera phylogenies should have a representative sequence
+from each genus. This can be accomplished by giving all examples of a
+particular gene the same name in the reference FASTA file. e.g.
+
+.. code-block:: bash
+
+  >Gene1 Refgenus1 refspecies ABC
+  <AA sequence>
+  >Gene1 Refgenus2 refspecies DEF
+  <AA sequence>
+  >Gene1 Refgenus3 refspecies GHI
+  <AA sequence>
+
+This ^ FASTA ^ file would have three representatives of Gene1 in the analysis.
+The resulting alignments would have one copy of the gene, with the best hits
+from each target genome included.
+
+Target genome files will be named based on the filename in the final output.
+Generally, one will want to have Genus_species_strain.fasta or
+G_species_strain.fasta as the filenames prior to analysis.
+
+Genomes can be downloaded using my ``get_assemblies`` program, here:
+https://pypi.org/project/get-assemblies/. Locally produced genomes can be
+renamed as required.
+
+TODO
+----
+
+1. Write detailed list of intermediate files.
+2. Compare functionality of this version to prior autoMLSA.py version.
+
+Contributing
+------------
+
+Bug reports are encouraged! Submit a github issue and I'll be happy to take
+a look. Also, feel free to clone and submit merge requests.
 
 Author Contact
 --------------
