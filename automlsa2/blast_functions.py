@@ -94,14 +94,10 @@ def read_blast_results(blastfiles: List[str], coverage: int, identity: int,
                 for i, dat in enumerate(
                         p.imap_unordered(reader, blastfiles)):
                     pbar.update()
-                    data.append(dat)
-            # p.map(subprocess.run, cmds)
-        # for blastfile in tqdm(blastfiles, 'Reading BLAST Result'):
-        #     data: pd.DataFrame = pd.read_csv(blastfile, header=None,
-        #                                      names=headers, comment='#',
-        #                                      dtype=dtypes, sep='\t')
-        #     results = results.append(data, ignore_index=True)
-        results = pd.DataFrame(data=data, columns=headers, dtype=dtypes)
+                    for row in dat:
+                        data.append(row)
+        results = pd.DataFrame(data=data, columns=headers)
+        results = results.astype(dtypes)
         results.query('(pident >= @identity) & (qcovhsp >= @coverage)',
                       inplace=True)
         results.to_csv(results_fn, sep='\t')

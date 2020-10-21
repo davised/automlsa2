@@ -65,7 +65,7 @@ def main() -> None:
 
     # BLAST output results, summary, and files --------------------------------
     blastres: pd.DataFrame = read_blast_results(blastout, args.coverage,
-                                                args.identity)
+                                                args.identity, args.threads)
     blastfilt: pd.DataFrame = print_blast_summary(
         args.runid, blastres, labels, args.allow_missing,
         args.missing_check, args.checkpoint == 'filtering', args.protect)
