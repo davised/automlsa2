@@ -8,6 +8,7 @@ import os
 import logging
 import multiprocessing
 import shlex
+import csv
 from multiprocessing import Pool
 from typing import List, Dict, Any, DefaultDict
 from .helper_functions import (
@@ -40,8 +41,23 @@ def make_blast_database(makeblastdb: str, fasta: str) -> None:
                            stdout=textlog, stderr=subprocess.STDOUT)
 
 
-def read_blast_results(blastfiles: List[str], coverage: int, identity: int) ->\
-        pd.DataFrame:
+def reader(fn: str) -> List[str]:
+    """
+    Read tsv file into list
+    input  - filename to read
+    return - list of results
+    """
+    dat: List[str] = []
+    with open(fn, 'r') as tsv:
+        tsvreader = csv.reader([row for row in tsv if not row.startswith('#')],
+                               delimiter='\t')
+        for row in tsvreader:
+            dat.append(row)
+    return dat
+
+
+def read_blast_results(blastfiles: List[str], coverage: int, identity: int,
+                       threads: int) -> pd.DataFrame:
     """
     Parses set of BLAST results. Expects list of files.
 
@@ -69,12 +85,23 @@ def read_blast_results(blastfiles: List[str], coverage: int, identity: int) ->\
         logger.debug('Reading from existing BLAST results.')
         results: pd.DataFrame = pd.read_csv(results_fn, dtype=dtypes, sep='\t')
     else:
-        results = pd.DataFrame(columns=headers)
-        for blastfile in tqdm(blastfiles, 'Reading BLAST Result'):
-            data: pd.DataFrame = pd.read_csv(blastfile, header=None,
-                                             names=headers, comment='#',
-                                             dtype=dtypes, sep='\t')
-            results = results.append(data, ignore_index=True)
+        # results = pd.DataFrame(columns=headers)
+        data: List[List[str]] = []
+        nfiles = len(blastfiles)
+        p: multiprocessing.pool.Pool = Pool(threads)
+        with p:
+            with tqdm(total=nfiles, desc='Reading BLAST') as pbar:
+                for i, dat in enumerate(
+                        p.imap_unordered(reader, blastfiles)):
+                    pbar.update()
+                    data.append(dat)
+            # p.map(subprocess.run, cmds)
+        # for blastfile in tqdm(blastfiles, 'Reading BLAST Result'):
+        #     data: pd.DataFrame = pd.read_csv(blastfile, header=None,
+        #                                      names=headers, comment='#',
+        #                                      dtype=dtypes, sep='\t')
+        #     results = results.append(data, ignore_index=True)
+        results = pd.DataFrame(data=data, columns=headers, dtype=dtypes)
         results.query('(pident >= @identity) & (qcovhsp >= @coverage)',
                       inplace=True)
         results.to_csv(results_fn, sep='\t')
