@@ -41,13 +41,13 @@ def make_blast_database(makeblastdb: str, fasta: str) -> None:
                            stdout=textlog, stderr=subprocess.STDOUT)
 
 
-def reader(fn: str) -> List[str]:
+def reader(fn: str) -> List[List[str]]:
     """
     Read tsv file into list
     input  - filename to read
     return - list of results
     """
-    dat: List[str] = []
+    dat: List[List[str]] = []
     with open(fn, 'r') as tsv:
         tsvreader = csv.reader([row for row in tsv if not row.startswith('#')],
                                delimiter='\t')
