@@ -13,7 +13,16 @@ supports Python 3.7+ and PyPy.
 
 .. code-block:: bash
 
-    $ pip install --upgrade automlsa2
+    $ python3 -m pip install -U automlsa2
+
+git version install:
+
+.. code-block:: bash
+
+    $ git clone https://github.com/davised/automlsa2.git
+    $ cd automlsa2
+    $ python3 -m pip install -r requirements.txt
+    $ python3 -m pip install -U .
 
 Dependencies
 ------------
