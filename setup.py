@@ -1,4 +1,4 @@
-from setuptools import find_packages, setup
+from setuptools import find_packages, setup  # type: ignore
 
 with open('automlsa2/__version__.py', 'r') as f:
     for line in f:
