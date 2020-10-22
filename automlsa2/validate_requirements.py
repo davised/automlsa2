@@ -45,6 +45,11 @@ def check_program(exe: str, program_name: str, version_flag: str) -> bool:
         msg = 'Unable to find {} executable in path or in provided dir ({})'
         logger.error(msg.format(program_name, exe))
         success = False
+    except PermissionError:
+        msg = 'Unable to run {} executable in ({}). Make sure it is '\
+            'installed properly and has the correct permissions to run.'
+        logger.error(msg.format(program_name, exe))
+        success = False
     else:
         logger.debug('{} found: {}'.format(program_name, ver))
         success = True
