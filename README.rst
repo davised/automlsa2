@@ -164,7 +164,7 @@ containing one or more query gene sequences is necessary for analysis.
 
 By default, protein queries are expected, and nucleotide FASTA sequence is
 required for the target genomes. ``tblastn`` is used to target the genome
-seuqences using the amino acid queries. ``blastn`` is also available, targeting
+sequences using the amino acid queries. ``blastn`` is also available, targeting
 the genome sequences using nucleotide queries.
 
 Threads will speed things up significantly. BLAST searches are threaded in
