@@ -19,7 +19,8 @@ class InstallDeps(argparse.Action):
     def __init__(self, nargs='?', **kw):
         super().__init__(nargs=nargs, **kw)
 
-    def __call__(self, parser, namespace, values, option_string=None):
+    # def __call__(self, parser, namespace, values, option_string=None):
+    def __call__(self, parser, values):
         if values:
             external = values
         else:

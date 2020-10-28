@@ -262,7 +262,7 @@ def install_mafft(external: str = '') -> None:
             logger.info('Unpacking MAFFT zip file.')
             shutil.unpack_archive(out_file, externalpath, 'zip')
         logger.debug('Changing permissions.')
-        for root, folders, files in \
+        for root, _, files in \
                 os.walk(os.path.join(externalpath, 'mafft-mac')):
             for exe in files:
                 os.chmod(os.path.join(root, exe), 0o755)
