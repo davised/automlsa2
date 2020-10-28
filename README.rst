@@ -201,7 +201,8 @@ TODO
 ----
 
 1. Write detailed list of intermediate files.
-2. Compare functionality of this version to prior autoMLSA.py version.
+2. Compare functionality of this version to prior autoMLSA.pl version.
+3. Check for version numbers for external programs.
 
 Contributing
 ------------
