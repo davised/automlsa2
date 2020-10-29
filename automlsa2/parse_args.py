@@ -212,12 +212,11 @@ def run_argparse() -> argparse.Namespace:
         '--external', help='Path to installed external programs. '
                            '[~/.local/external]', type=extant_file)
     parser.add_argument(
-        '--mafft', help='mafft settings [%(default)s]',
-        default='--localpair --maxiterate 1000',
+        '--mafft', help='mafft settings [--localpair --maxiterate 1000]',
         type=str)
     parser.add_argument(
-        '--iqtree', help='iqtree2 settings [%(default)s]',
-        default='-m MFP -B 1000 -alrt 1000 --msub nuclear --merge rclusterf',
+        '--iqtree', help='iqtree2 settings '
+        '[-m MFP -B 1000 -alrt 1000 --msub nuclear --merge rclusterf]',
         type=str)
     parser.add_argument(
         '--debug', help='Turn on debugging messages.', action='store_true',

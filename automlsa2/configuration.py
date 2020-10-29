@@ -130,7 +130,7 @@ def validate_arguments(args: argparse.Namespace, config: dict,
             args.allow_missing = 0
     else:
         try:
-            args.allow_missing != int(config['allow_missing'])
+            check = args.allow_missing != int(config['allow_missing'])
         except KeyError:
             pass
         else:
@@ -180,6 +180,35 @@ def validate_arguments(args: argparse.Namespace, config: dict,
         else:
             if check:
                 pass
+
+    if args.iqtree is None:
+        if 'iqtree' in config.keys() and config['iqtree'] is not None:
+            args.iqtree = config['iqtree']
+        else:
+            args.iqtree = ('-m MFP -B 1000 -alrt 1000 --msub nuclear --merge '
+                           'rclusterf')
+    else:
+        try:
+            check = args.iqtree != config['iqtree']
+        except KeyError:
+            pass
+        else:
+            if check:
+                changed = True
+
+    if args.mafft is None:
+        if 'mafft' in config.keys() and config['mafft'] is not None:
+            args.mafft = config['mafft']
+        else:
+            args.mafft = '--localpair --maxiterate 1000'
+    else:
+        try:
+            check = args.mafft != config['mafft']
+        except KeyError:
+            pass
+        else:
+            if check:
+                changed = True
 
     if changed:
         logger.debug('One or more settings was changed from config.')
