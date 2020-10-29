@@ -29,6 +29,7 @@ def get_fasta_list(dirpath: str, rundir: str) -> List[str]:
             logger.warning(msg)
             dirpath = fastadir
     fasta_list: List[str] = []
+    logger.debug('Checking for FASTA format files in {}'.format(dirpath))
     for fa in glob.iglob(os.path.join(dirpath, '*')):
         # sys.stderr.write('Checking if {} is FASTA.\n'.format(fa))
         if os.path.isdir(fa):
@@ -38,7 +39,7 @@ def get_fasta_list(dirpath: str, rundir: str) -> List[str]:
             fasta_list.append(os.path.abspath(fa))
         else:
             msg = '{} does not appear to be FASTA file, skipping.'
-            logger.debug(msg.format(fa))
+            logger.debug(msg.format(os.path.basename(fa)))
     if fasta_list:
         msg = 'Found FASTA files in {}'
         logger.info(msg.format(dirpath))
