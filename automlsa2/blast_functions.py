@@ -9,6 +9,7 @@ import logging
 import multiprocessing
 import shlex
 import csv
+import sys
 from multiprocessing import Pool
 from typing import List, Dict, Any, DefaultDict
 from .helper_functions import (
@@ -26,6 +27,7 @@ signal(SIGPIPE, SIG_DFL)
 signal(SIGINT, SIG_DFL)
 
 SINGLE_COPY_ESTIMATE = 0.90
+PERCENT_CUTOFF = 50.0
 
 
 def make_blast_database(makeblastdb: str, fasta: str) -> None:
@@ -139,16 +141,20 @@ def print_blast_summary(runid: str, blastout: pd.DataFrame, labels: List[str],
 
     # Get zero counts for filtering
     # Queries
+    removal_candidates: Dict[str, str] = {}
     summary['queries']['missing'] = defaultdict(dict)
     zero_counts_query: pd.DataFrame = presence_matrix.apply(
         lambda x: x[x == 0].index.tolist(), axis=0)
     zero_counts_query_dict: Dict[str, List[str]] = zero_counts_query.to_dict()
     for query, genomes in zero_counts_query_dict.items():
         ngenomes = len(genomes)
+        percent = ngenomes / summary['genomes']['count'] * 100
+        percentf = '{:.2f}'.format(percent)
+        if percent > PERCENT_CUTOFF:
+            removal_candidates[query] = percentf
         summary['queries']['missing'][query]['genomes'] = genomes
         summary['queries']['missing'][query]['count'] = ngenomes
-        summary['queries']['missing'][query]['percent'] = \
-            '{:.2f}'.format(ngenomes / summary['genomes']['count'] * 100)
+        summary['queries']['missing'][query]['percent'] = percentf
     summary['queries']['missing'] = dict(summary['queries']['missing'])
 
     # Genomes
@@ -208,6 +214,10 @@ def print_blast_summary(runid: str, blastout: pd.DataFrame, labels: List[str],
                        .format(len(genome_missing_dict)))
         logger.warning('Check out the presence_matrix.tsv, and '
                        'missing_by_genome.json files to review.')
+        if removal_candidates:
+            logger.warning('Consider removing these genes from the analysis:')
+            for query, percent in removal_candidates.items():
+                sys.stderr.write(f'         - {query} -> missing {percent}%\n')
         if not missing_check:
             logger.warning('Use --missing_check to continue.')
             end_program(1)
