@@ -11,7 +11,8 @@ from .helper_functions import (
     check_if_fasta,
     end_program,
     checkpoint_reached,
-    json_writer
+    json_writer,
+    remove_intermediates,
 )
 
 
@@ -68,6 +69,7 @@ def validate_arguments(args: argparse.Namespace, config: dict,
     input  - args from argparse; config from config file
     return - validated args from argparse
     """
+    # config dict is from file
     # Determine if defaults need to be set
     # e = 1e-5
     # m = 500
@@ -80,27 +82,60 @@ def validate_arguments(args: argparse.Namespace, config: dict,
     error: bool = False
 
     # Reconcile config file and command line options
+    changed: bool = False
     if args.evalue is None:
         if 'evalue' in config.keys() and config['evalue'] is not None:
             args.evalue = float(config['evalue'])
         else:
             args.evalue = 1e-5
+    else:
+        try:
+            check = args.evalue != float(config['evalue'])
+        except KeyError:
+            pass
+        else:
+            if check:
+                changed = True
     if args.coverage is None:
         if 'coverage' in config.keys() and config['coverage'] is not None:
             args.coverage = int(config['coverage'])
         else:
             args.coverage = 50
+    else:
+        try:
+            check = args.coverage != int(config['coverage'])
+        except KeyError:
+            pass
+        else:
+            if check:
+                changed = True
     if args.identity is None:
         if 'identity' in config.keys() and config['identity'] is not None:
             args.identity = int(config['identity'])
         else:
             args.identity = 30
+    else:
+        try:
+            check = args.identity != int(config['identity'])
+        except KeyError:
+            pass
+        else:
+            if check:
+                changed = True
     if args.allow_missing is None:
         if 'allow_missing' in config.keys() and \
                 config['allow_missing'] is not None:
             args.allow_missing = int(config['allow_missing'])
         else:
             args.allow_missing = 0
+    else:
+        try:
+            args.allow_missing != int(config['allow_missing'])
+        except KeyError:
+            pass
+        else:
+            if check:
+                changed = True
     if not args.missing_check:
         if 'missing_check' in config.keys() and \
                 config['missing_check']:
@@ -119,6 +154,14 @@ def validate_arguments(args: argparse.Namespace, config: dict,
                 end_program(78)
         else:
             args.program = 'tblastn'
+    else:
+        try:
+            check = args.program != config['program']
+        except KeyError:
+            pass
+        else:
+            if check:
+                changed = True
     if args.threads is None:
         if 'threads' in config.keys() and config['threads'] is not None:
             args.threads = int(config['threads'])
@@ -129,6 +172,19 @@ def validate_arguments(args: argparse.Namespace, config: dict,
             args.outgroup = config['outgroup']
         else:
             args.outgroup = ''
+    else:
+        try:
+            check = args.outgroup != config['outgroup']
+        except KeyError:
+            pass
+        else:
+            if check:
+                pass
+
+    if changed:
+        logger.debug('One or more settings was changed from config.')
+        remove_intermediates(args.runid, ['genome'], args.protect)
+
     if args.checkpoint is None:
         if 'checkpoint' in config.keys() and config['checkpoint'] is not None:
             args.checkpoint = config['checkpoint']
