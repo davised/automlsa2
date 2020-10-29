@@ -4,6 +4,8 @@ import argparse
 import logging
 import pprint
 import sys
+from rich.logging import RichHandler
+from rich.console import Console
 from .helper_functions import check_if_fasta
 from .validate_requirements import (
     check_program,
@@ -119,33 +121,24 @@ def init_logger(debug: bool, quiet: bool, rundir: str, runid: str) -> \
     return - None; use logger = logging.getLogger(__name__)
     """
 
-    # initialize logger with program name
     # must set logging level to DEBUG to print DEBUG to file
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
 
-    formatter = logging.Formatter('%(name)s - %(asctime)s - '
-                                  '%(levelname)s - %(message)s',
-                                  datefmt='%Y-%m-%d %H:%M:%S')
-
-    stderr_handler = logging.StreamHandler()
-    stderr_handler.setFormatter(formatter)
+    stderr_handler = RichHandler(rich_tracebacks=True)
     if debug:
         stderr_handler.setLevel(logging.DEBUG)
     elif quiet:
         stderr_handler.setLevel(logging.WARNING)
     else:
         stderr_handler.setLevel(logging.INFO)
-
-    # file_handler = logging.FileHandler('{}/{}.log'.format(rundir, runid))
-    if rundir and runid:
-        file_handler = logging.FileHandler(
-            os.path.join(rundir, '{}.log'.format(runid)))
-        file_handler.setFormatter(formatter)
-        file_handler.setLevel(logging.DEBUG)
-        logger.addHandler(file_handler)
-
     logger.addHandler(stderr_handler)
+
+    # Print to file as well, if provided.
+    if rundir and runid:
+        logfile = os.path.join(rundir, '{}.log'.format(runid))
+        file_handler = RichHandler(console=Console(file=open(logfile, 'a')))
+        logger.addHandler(file_handler)
 
 
 def run_argparse() -> argparse.Namespace:
