@@ -40,7 +40,7 @@ def remove_intermediates(runid: str, intermediates: List[str], protect: bool)\
         os.remove(delfile)
 
 
-def end_program(code):
+def end_program(code: int) -> None:
     """
     Program message including success or failure of the program.
     """
@@ -67,10 +67,15 @@ def check_if_fasta(fa):
         if suffix in fa:
             return False
     with open(fa, 'r') as fah:
-        if fah.readline().startswith('>'):
-            return True
-        else:
+        try:
+            test = fah.readline().startswith('>')
+        except UnicodeDecodeError:
             return False
+        else:
+            if test:
+                return True
+            else:
+                return False
 
 
 def json_writer(fn, x):
