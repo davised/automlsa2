@@ -143,11 +143,12 @@ def print_blast_summary(runid: str, blastout: pd.DataFrame, labels: List[str],
     zero_counts_query: pd.DataFrame = presence_matrix.apply(
         lambda x: x[x == 0].index.tolist(), axis=0)
     zero_counts_query_dict: Dict[str, List[str]] = zero_counts_query.to_dict()
-    for k, v in zero_counts_query_dict.items():
-        summary['queries']['missing'][k]['genomes'] = v
-        summary['queries']['missing'][k]['count'] = len(v)
-        summary['queries']['missing'][k]['percent'] = \
-            '{:.2f}'.format(len(v) / summary['genomes']['count'] * 100)
+    for query, genomes in zero_counts_query_dict.items():
+        ngenomes = len(genomes)
+        summary['queries']['missing'][query]['genomes'] = genomes
+        summary['queries']['missing'][query]['count'] = ngenomes
+        summary['queries']['missing'][query]['percent'] = \
+            '{:.2f}'.format(ngenomes / summary['genomes']['count'] * 100)
     summary['queries']['missing'] = dict(summary['queries']['missing'])
 
     # Genomes
