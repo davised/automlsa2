@@ -156,29 +156,30 @@ def print_blast_summary(runid: str, blastout: pd.DataFrame, labels: List[str],
         lambda x: x[x == 0].index.tolist(), axis=1)
     zero_counts_genome_dict: Dict[str, List[str]] = \
         zero_counts_genome.to_dict()
-    for k, v in zero_counts_genome_dict.items():
-        summary['genomes']['missing'][k]['queries'] = v
-        summary['genomes']['missing'][k]['count'] = len(v)
-        summary['genomes']['missing'][k]['percent'] = \
-            '{:.2f}'.format(len(v) / summary['queries']['count'] * 100)
-        missing_count[len(v)].append(k)
-        if v != []:
-            genome_missing_dict[k] = v
+    for genome, queries in zero_counts_genome_dict.items():
+        nmissing = len(queries)
+        summary['genomes']['missing'][genome]['queries'] = queries
+        summary['genomes']['missing'][genome]['count'] = nmissing
+        summary['genomes']['missing'][genome]['percent'] = \
+            '{:.2f}'.format(nmissing / summary['queries']['count'] * 100)
+        missing_count[nmissing].append(genome)
+        if nmissing == 0:
+            keeps.append(genome)
         else:
-            keeps.append(k)
+            genome_missing_dict[genome] = queries
     summary['genomes']['missing'] = dict(summary['genomes']['missing'])
 
-    for k in genome_missing_dict:
-        nmissing: int = len(genome_missing_dict[k])
+    for genome in genome_missing_dict:
+        nmissing: int = len(genome_missing_dict[genome])
         if nmissing > nallowed:
             msg = 'Genome {} is going to be removed due to missing queries.'
-            logger.warning(msg.format(k))
+            logger.warning(msg.format(genome))
             msg = 'Increase --allow_missing to {} from {} to keep this genome.'
             logger.warning(msg.format(nmissing, nallowed))
         else:
             msg = 'Keeping genome {} missing {} queries due to --allow_missing'
-            logger.debug(msg.format(k, nmissing))
-            keeps.append(k)
+            logger.debug(msg.format(genome, nmissing))
+            keeps.append(genome)
     msg = 'Keeping these genomes ({}):\n         - {}'
     logger.info(msg.format(len(keeps), '\n         - '.join(keeps)))
     keepsidx = [str(genome_map[x]) for x in keeps]
