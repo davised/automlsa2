@@ -5,9 +5,9 @@ import subprocess
 from .helper_functions import (
     checkpoint_reached,
     checkpoint_tracker,
-    end_program
+    end_program,
 )
-from typing import List
+from typing import List, Union
 
 
 def generate_nexus(runid: str, aligned: List[str], checkpoint: bool) -> str:
@@ -50,7 +50,8 @@ def generate_nexus(runid: str, aligned: List[str], checkpoint: bool) -> str:
     return(nexus)
 
 
-def run_iqtree(threads: int, iqtree: str, nexus: str, outgroup: str) -> str:
+def run_iqtree(threads: int, iqtree: str, nexus: str, outgroup: str,
+               opts: List[Union[str, int]]) -> str:
     """
     Runs external iqtree command to generate phylogeny
 
@@ -60,14 +61,20 @@ def run_iqtree(threads: int, iqtree: str, nexus: str, outgroup: str) -> str:
     logger = logging.getLogger(__name__)
     out_tree: str = '{}.treefile'.format(nexus)
     logger.info('Generating phylogenetic tree ({}).'.format(out_tree))
+    # cmd: List[str] = [
+    #     iqtree,
+    #     '-p', nexus,
+    #     '-m', 'MFP',
+    #     '-B', '1000',
+    #     '-alrt', '1000',
+    #     '--msub', 'nuclear',
+    #     '--merge', 'rclusterf',
+    #     '-nt', str(threads)]
     cmd: List[str] = [
         iqtree,
         '-p', nexus,
-        '-B', '1000',
-        '-alrt', '1000',
-        '-m', 'MFP+MERGE',
-        '-rclusterf', '10',
         '-nt', str(threads)]
+    cmd.extend(opts)
     if outgroup:
         cmd.extend(['-o', outgroup])
     if os.path.exists(out_tree):

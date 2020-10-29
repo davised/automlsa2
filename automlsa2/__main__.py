@@ -5,6 +5,7 @@ import os
 import logging
 import argparse
 import pandas as pd  # type: ignore
+import shlex
 from typing import List, Dict, Any
 from .parse_args import run_argparse
 from .validate_requirements import validate_requirements
@@ -73,13 +74,14 @@ def main() -> None:
 
     # ALIGNMENT SECTION -------------------------------------------------------
     aligned: List[str] = run_mafft(
-        args.threads, exes['mafft'], unaligned, args.checkpoint)
+        args.threads, exes['mafft'], unaligned, args.checkpoint,
+        shlex.split(args.mafft))
 
     # PHYLOGENY SECTION -------------------------------------------------------
     nexus: str = generate_nexus(args.runid, aligned, args.checkpoint ==
                                 'nexus')
     treefile: str = run_iqtree(args.threads, exes['iqtree'], nexus,
-                               args.outgroup)
+                               args.outgroup, shlex.split(args.iqtree))
     exit_successfully(args.rundir, treefile)
 
 

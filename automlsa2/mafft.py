@@ -5,18 +5,18 @@ import shlex
 import subprocess
 from .helper_functions import checkpoint_reached, checkpoint_tracker
 from tqdm import tqdm  # type: ignore
-from typing import List
+from typing import List, Union
 
 
 def run_mafft(threads: int, mafft: str, unaligned: List[str],
-              checkpoint: bool) -> List[str]:
+              checkpoint: bool, opts: List[Union[str, int]]) -> List[str]:
     """
     input  - unaligned fasta files per query
     return - list of aligned files per query
     """
     logger = logging.getLogger(__name__)
-    base_cmd: List[str] = [mafft, '--localpair', '--maxiterate', str(1000),
-                           '--thread', str(threads)]
+    base_cmd: List[str] = [mafft, '--thread', str(threads)]
+    base_cmd.extend(opts)
     aligneddir: str = 'aligned'
     aligned: List[str] = []
     cmdstrs: List[str] = []
