@@ -21,7 +21,7 @@ from .helper_functions import (
     SUFFIXES
 )
 from collections import defaultdict
-from tqdm import tqdm  # type: ignore
+from rich.progress import track
 from signal import signal, SIGPIPE, SIGINT, SIG_DFL
 signal(SIGPIPE, SIG_DFL)
 signal(SIGINT, SIG_DFL)
@@ -88,17 +88,21 @@ def read_blast_results(blastfiles: List[str], coverage: int, identity: int,
         results: pd.DataFrame = pd.read_csv(results_fn, dtype=dtypes, sep='\t')
     else:
         # results = pd.DataFrame(columns=headers)
-        data: List[List[str]] = []
+        blastrows: List[List[str]] = []
         nfiles = len(blastfiles)
         p: multiprocessing.pool.Pool = Pool(threads)
         with p:
-            with tqdm(total=nfiles, desc='Reading BLAST') as pbar:
-                for i, dat in enumerate(
-                        p.imap_unordered(reader, blastfiles)):
-                    pbar.update()
-                    for row in dat:
-                        data.append(row)
-        results = pd.DataFrame(data=data, columns=headers)
+            # with tqdm(total=nfiles, desc='Reading BLAST') as pbar:
+            #     for i, dat in enumerate(
+            #             p.imap_unordered(reader, blastfiles)):
+            #         pbar.update()
+            #         for row in dat:
+            #             blastrows.append(row)
+            for dat in track(p.imap_unordered(reader, blastfiles),
+                             'Reading Blast...'.rjust(19, ' '), nfiles):
+                for row in dat:
+                    blastrows.append(row)
+        results = pd.DataFrame(data=blastrows, columns=headers)
         results = results.astype(dtypes)
         results.query('(pident >= @identity) & (qcovhsp >= @coverage)',
                       inplace=True)
@@ -330,11 +334,14 @@ def generate_blast_list(rundir: str, exe: str, queries: List[str], targets:
             logger.info(msg.format(ncmds, threads))
             p: multiprocessing.pool.Pool = Pool(threads)
             with p:
-                with tqdm(total=ncmds, desc='BLAST Search') as pbar:
-                    for i, _ in enumerate(
-                            p.imap_unordered(subprocess.run, cmds)):
-                        pbar.update()
+                # with tqdm(total=ncmds, desc='BLAST Search') as pbar:
+                #     for i, _ in enumerate(
+                #             p.imap_unordered(subprocess.run, cmds)):
+                #         pbar.update()
                 # p.map(subprocess.run, cmds)
+                for _ in track(p.imap_unordered(subprocess.run, cmds),
+                               'Blast Search...'.rjust(19, ' '), ncmds):
+                    pass
     else:
         logger.info('No BLAST searches remaining. Moving to parse.')
 

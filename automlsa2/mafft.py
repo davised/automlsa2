@@ -4,7 +4,8 @@ import logging
 import shlex
 import subprocess
 from .helper_functions import checkpoint_reached, checkpoint_tracker
-from tqdm import tqdm  # type: ignore
+# from tqdm import tqdm  # type: ignore
+from rich.progress import track
 from typing import List, Union
 
 
@@ -23,7 +24,7 @@ def run_mafft(threads: int, mafft: str, unaligned: List[str],
     logger.info('Aligning FASTA sequences, if necessary.')
     if not os.path.exists(aligneddir):
         os.mkdir(aligneddir)
-    for unalign in tqdm(unaligned, desc='mafft'):
+    for unalign in track(unaligned, 'Running mafft...'.rjust(19, ' ')):
         outname: str = '{}/{}.aln'.format(
             aligneddir, os.path.basename(os.path.splitext(unalign)[0]))
         logname: str = '{}.log'.format(outname)

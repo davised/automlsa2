@@ -11,10 +11,10 @@ with open('automlsa2/__version__.py', 'r') as f:
 with open('README.rst', 'r', encoding='utf-8') as f:
     readme = f.read()
 
-REQUIRES = ['biopython>=1.78',
-            'pandas>=1.1.2',
-            'numpy>=1.19.2',
-            'tqdm>=4.50.2']
+REQUIRES = ['biopython',
+            'pandas>=1.0.0',
+            'numpy',
+            'rich']
 
 kwargs = {
     'name': 'automlsa2',

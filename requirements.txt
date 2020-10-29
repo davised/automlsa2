@@ -1,4 +1,4 @@
 biopython >= 1.78
 numpy >= 1.19.2
 pandas >= 1.1.2
-tqdm >= 4.50.2
+rich >= 9.1.0

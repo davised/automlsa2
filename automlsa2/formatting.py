@@ -3,7 +3,8 @@ import logging
 import os
 import json
 import glob
-from tqdm import tqdm  # type: ignore
+# from tqdm import tqdm  # type: ignore
+from rich.progress import track
 from .helper_functions import (
     generate_hash,
     json_writer,
@@ -64,7 +65,9 @@ def convert_fasta(rundir: str, fastas: List[str], labels: List[str],
                     seq += str(rec.seq)
             seqhash = generate_hash(seq)
             rename_info[base]['hash'] = seqhash
-    for labelfastaf in tqdm(new_fastas, desc='makeblastdb'):
+    logger.info('Generating and/or validating BLAST DBs.')
+    for labelfastaf in track(new_fastas,
+                             'makeblastdb...'.rjust(19, ' ')):
         make_blast_database(makeblastdb, labelfastaf)
     json_writer(renamef, rename_info)
 
