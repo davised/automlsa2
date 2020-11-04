@@ -82,9 +82,13 @@ def validate_arguments(args: argparse.Namespace, config: dict,
     error: bool = False
 
     autoMLSA = os.path.join(args.rundir, '.autoMLSA')
+    checkpoint_dir = os.path.join(autoMLSA, 'checkpoint')
 
     if not os.path.exists(autoMLSA):
         os.mkdir(autoMLSA)
+
+    if not os.path.exists(checkpoint_dir):
+        os.mkdir(checkpoint_dir)
 
     # Reconcile config file and command line options
     changed: bool = False
@@ -224,6 +228,8 @@ def validate_arguments(args: argparse.Namespace, config: dict,
             args.checkpoint = config['checkpoint']
         else:
             args.checkpoint = 'none'
+        if args.checkpoint == 'validate':
+            checkpoint = True
     if args.protect is None:
         if 'protect' in config.keys() and config['protect'] is not None:
             args.protect = config['protect']
