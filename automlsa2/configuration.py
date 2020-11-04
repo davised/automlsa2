@@ -81,6 +81,11 @@ def validate_arguments(args: argparse.Namespace, config: dict,
     logger.debug('Validating & reconciling arguments.')
     error: bool = False
 
+    autoMLSA = os.path.join(args.rundir, '.autoMLSA')
+
+    if not os.path.exists(autoMLSA):
+        os.mkdir(autoMLSA)
+
     # Reconcile config file and command line options
     changed: bool = False
     if args.evalue is None:
