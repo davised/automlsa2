@@ -40,7 +40,7 @@ def convert_fasta(rundir: str, fastas: List[str], labels: List[str],
     if not os.path.exists(fastadir):
         os.mkdir(fastadir)
 
-    for fasta in fastas:
+    for fasta in track(fastas, 'Working...'.rjust(19, ' ')):
         base = os.path.basename(fasta)
         label = labels.index(base)
         labelfastaf = os.path.join(fastadir, base)
