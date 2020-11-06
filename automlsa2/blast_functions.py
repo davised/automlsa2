@@ -264,7 +264,7 @@ def print_fasta_files(blastout: pd.DataFrame, labels: List[str]) -> List[str]:
         os.mkdir(fastdir)
     msg = 'Writing unaligned FASTA sequences, if necessary.'
     logger.info(msg)
-    for name, group in blastout.groupby('qseqid'):
+    for name, group in track(blastout.groupby('qseqid')):
         fasta: str = os.path.join(fastdir, '{}.fas'.format(name))
         unaligned.append(fasta)
         if os.path.exists(fasta):
