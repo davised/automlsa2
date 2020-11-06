@@ -22,7 +22,6 @@ class InstallDeps(argparse.Action):
         super().__init__(nargs=nargs, **kw)
 
     def __call__(self, parser, namespace, values, option_string=None):
-    # def __call__(self, parser, values):
         if values:
             external = values
         else:
@@ -137,7 +136,8 @@ def init_logger(debug: bool, quiet: bool, rundir: str, runid: str) -> \
     # Print to file as well, if provided.
     if rundir and runid:
         logfile = os.path.join(rundir, '{}.log'.format(runid))
-        file_handler = RichHandler(console=Console(file=open(logfile, 'a')))
+        file_handler = RichHandler(console=Console(file=open(logfile, 'a'),
+                                                   width=119))
         logger.addHandler(file_handler)
 
 
