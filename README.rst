@@ -4,6 +4,26 @@ automlsa2
 .. contents:: **Table of Contents**
     :backlinks: none
 
+Who might want this software?
+-----------------------------
+
+The intended audience is scientific researchers, computational biologists, and
+bioinformaticians who are interested in exploring phylogenetic and phylogenomic
+relationships between genes and organisms. The general idea is to allow the
+input of sequence data along with marker genes and output a robust phylogenetic
+tree. I've implemented commands to help with the installation of external
+dependencies, and I hope the software is easy to use.
+
+If you have feature requests or otherwise have ideas about how to make this
+software better, please submit an issue with your ideas!
+
+PhD/Masters students and undergraduates are especially encouraged to submit
+issues if they are having trouble using this software.
+
+Windows users, please install WSL to make use of this software. Using a Linux
+distribution will make your life as a computational researcher significantly
+easier.
+
 Installation
 ------------
 
