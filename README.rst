@@ -154,43 +154,31 @@ Usage
 
 optional arguments:
 
--h, --help            show this help message and exit
---query <QUERY [QUERY ...]>
-                      Path to file with input seq(s).
---files <FILES [FILES ...]>
-                      Path to the target genome FASTA files.
---dir <DIR [DIR ...]>
-                      Path to the target genome directory with FASTA files.
--e EVALUE, --evalue EVALUE
-                      E-value cutoff for BLAST searches. [1e-5]
--c COVERAGE, --coverage COVERAGE
-                      Sets the coverage cut-off threshold. [50]
--i IDENTITY, --identity IDENTITY
-                      Sets the identity cut-off threshold. [30]
--p PROGRAM, --program PROGRAM
-                      Which BLAST program to run. [tblastn]
-                      {tblastn, blastn}
---config CONFIG       Path to configuration json file to copy.
---missing_check       Use this to confirm that settings have been checked when
-                      genes are missing.
--t THREADS, --threads THREADS
-                      Number of threads to use. [1]
---dups                Allow for duplicate query names for more sequence
-                      coverage across disparate organisms.
---allow_missing ALLOW_MISSING
-                      Allow for N missing genes per genome. [0]
---outgroup OUTGROUP   Name of outgroup file or strain to root on.
---protect             Save files from getting overwritten. By default, as input
-                      files update, older alignments and trees are deleted.
---checkpoint CHECKPOINT
-                      Name of stage to stop computing on. [none]
-                      {validate,preblast,filtering,prealign,postalign,nexus,none}
---install_deps <[INSTALL_DEPS]>
-                      Install dependencies into given directory. [~/.local/external]
---external EXTERNAL   Path to installed external programs. [~/.local/external]
---debug               Turn on debugging messages.
---version             show program's version number and exit
---quiet               Turn off progress messages.
+-h, --help                        show this help message and exit
+--query <QUERY [QUERY ...]>       Path to file with input seq(s).
+--files <FILES [FILES ...]>       Path to the target genome FASTA files.
+--dir <DIR [DIR ...]>             Path to the target genome directory with FASTA files.
+-e EVALUE, --evalue EVALUE        E-value cutoff for BLAST searches. [1e-5]
+-c COVERAGE, --coverage COVERAGE  Sets the coverage cut-off threshold. [50]
+-i IDENTITY, --identity IDENTITY  Sets the identity cut-off threshold. [30]
+-p PROGRAM, --program PROGRAM     Which BLAST program to run. [tblastn] {tblastn, blastn}
+--config CONFIG                   Path to configuration json file to copy.
+--missing_check                   Use this to confirm that settings have been
+                                  checked when genes are missing.
+-t THREADS, --threads THREADS     Number of threads to use. [1]
+--dups                            Allow for duplicate query names for more sequence
+                                  coverage across disparate organisms.
+--allow_missing ALLOW_MISSING     Allow for N missing genes per genome. [0]
+--outgroup OUTGROUP               Name of outgroup file or strain to root on.
+--protect                         Save files from getting overwritten. By default, as input
+                                  files update, older alignments and trees are deleted.
+--checkpoint CHECKPOINT           Name of stage to stop computing on. [none]
+                                  {validate,preblast,filtering,prealign,postalign,nexus,none}
+--install_deps <[INSTALL_DEPS]>   Install dependencies into given directory. [~/.local/external]
+--external EXTERNAL               Path to installed external programs. [~/.local/external]
+--debug                           Turn on debugging messages.
+--version                         show program's version number and exit
+--quiet                           Turn off progress messages.
 
 One or more input target genome FASTA files is required, either using
 ``--files`` or ``--dir``. Additionally, one or more query FASTA files
