@@ -1,6 +1,20 @@
 automlsa2
 =========
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/psf/black
+.. image:: https://badge.fury.io/py/automlsa2.svg
+    :target: https://badge.fury.io/py/automlsa2
+.. image:: https://img.shields.io/github/issues/davised/automlsa2
+    :alt: GitHub issues
+    :target: https://github.com/davised/automlsa2/issues
+.. image:: https://img.shields.io/github/forks/davised/automlsa2
+    :alt: GitHub forks
+    :target: https://github.com/davised/automlsa2/network
+.. image:: https://img.shields.io/github/stars/davised/automlsa2
+    :alt: GitHub stars
+    :target: https://github.com/davised/automlsa2/stargazers
+
 .. contents:: **Table of Contents**
     :backlinks: none
 
