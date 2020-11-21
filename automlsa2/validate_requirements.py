@@ -219,8 +219,9 @@ def install_blast(external: str = '') -> None:
     else:
         logger.info('tblastn found: {}'.format(tblastn_ver.strip().decode()))
         logger.info(
-            'Add {} to your $PATH to have access to this program outside of automlsa2'
-            .format(os.path.dirname(tblastn))
+            'Add {} to your $PATH to have access to this program outside of automlsa2'.format(
+                os.path.dirname(tblastn)
+            )
         )
 
 
@@ -282,8 +283,9 @@ def install_mafft(external: str = '') -> None:
     else:
         logger.info('mafft found: {}'.format(mafft_ver.strip().decode()))
         logger.info(
-            'Add {} to your $PATH to have access to this program outside of automlsa2'
-            .format(os.path.dirname(mafft))
+            'Add {} to your $PATH to have access to this program outside of automlsa2'.format(
+                os.path.dirname(mafft)
+            )
         )
 
 
@@ -351,6 +353,7 @@ def install_iqtree(external: str = '') -> None:
     else:
         logger.info('iqtree2 found: {}'.format(iqtree_ver.strip().decode()))
         logger.info(
-            'Add {} to your $PATH to have access to this program outside of automlsa2'
-            .format(os.path.dirname(iqtree))
+            'Add {} to your $PATH to have access to this program outside of automlsa2'.format(
+                os.path.dirname(iqtree)
+            )
         )
