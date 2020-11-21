@@ -43,7 +43,10 @@ def remove_intermediates(runid: str, intermediates: List[str], protect: bool) ->
             if os.path.exists(fullname):
                 os.remove(fullname)
     for delfile in glob.iglob(runid + '.nex*'):
-        os.remove(delfile)
+        logger.info('Backing up nexus and tree files to backup dir.')
+        shutil.move(delfile, 'backup')
+        if os.path.exists(delfile):
+            os.remove(delfile)
 
 
 def end_program(code: int) -> None:

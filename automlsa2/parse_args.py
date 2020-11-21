@@ -78,6 +78,7 @@ def config_rundir(runid: str) -> str:
         if not os.path.exists(rundir):
             try:
                 os.mkdir(rundir)
+                os.mkdir(os.path.join(rundir, 'backup'))
                 os.mkdir(os.path.join(rundir, '.autoMLSA'))
                 os.mkdir(os.path.join(rundir, '.autoMLSA', 'backups'))
                 os.mkdir(os.path.join(rundir, '.autoMLSA', 'checkpoint'))
