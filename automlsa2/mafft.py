@@ -4,13 +4,17 @@ import logging
 import shlex
 import subprocess
 from .helper_functions import checkpoint_reached, checkpoint_tracker
-# from tqdm import tqdm  # type: ignore
 from rich.progress import track
-from typing import List, Union
+from typing import List
 
 
-def run_mafft(threads: int, mafft: str, unaligned: List[str],
-              checkpoint: bool, opts: List[Union[str, int]]) -> List[str]:
+def run_mafft(
+    threads: int,
+    mafft: str,
+    unaligned: List[str],
+    checkpoint: bool,
+    opts: List[str],
+) -> List[str]:
     """
     input  - unaligned fasta files per query
     return - list of aligned files per query
@@ -26,7 +30,8 @@ def run_mafft(threads: int, mafft: str, unaligned: List[str],
         os.mkdir(aligneddir)
     for unalign in track(unaligned, 'Running mafft...'.rjust(19, ' ')):
         outname: str = '{}/{}.aln'.format(
-            aligneddir, os.path.basename(os.path.splitext(unalign)[0]))
+            aligneddir, os.path.basename(os.path.splitext(unalign)[0])
+        )
         logname: str = '{}.log'.format(outname)
         logger.debug('Aligning and writing to {}'.format(outname))
         aligned.append(outname)
@@ -35,14 +40,14 @@ def run_mafft(threads: int, mafft: str, unaligned: List[str],
             logger.debug(msg.format(outname))
         else:
             cmd: List[str] = base_cmd + [unalign]
-            cmdstr = ' '.join([shlex.quote(x) for x in cmd]) + \
-                ' > {}'.format(shlex.quote(outname))
+            cmdstr = ' '.join([shlex.quote(x) for x in cmd]) + ' > {}'.format(
+                shlex.quote(outname)
+            )
             logger.debug(cmdstr)
             if checkpoint == 'prealign':
                 cmdstrs.append(cmdstr)
             else:
-                with open(outname, 'w') as fh,\
-                        open(logname, 'w') as logfh:
+                with open(outname, 'w') as fh, open(logname, 'w') as logfh:
                     subprocess.run(cmd, stdout=fh, stderr=logfh, text=True)
     if cmdstrs:
         with open('mafftcmds.txt', 'w') as fh:

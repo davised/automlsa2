@@ -7,7 +7,7 @@ from .helper_functions import (
     checkpoint_tracker,
     end_program,
 )
-from typing import List, Union
+from typing import List
 
 
 def generate_nexus(runid: str, aligned: List[str], checkpoint: bool) -> str:
@@ -47,11 +47,12 @@ def generate_nexus(runid: str, aligned: List[str], checkpoint: bool) -> str:
         checkpoint_reached('after generating nexus file {}'.format(nexus))
 
     checkpoint_tracker('generate_nexus')
-    return(nexus)
+    return nexus
 
 
-def run_iqtree(threads: int, iqtree: str, nexus: str, outgroup: str,
-               opts: List[Union[str, int]]) -> str:
+def run_iqtree(
+    threads: int, iqtree: str, nexus: str, outgroup: str, opts: List[str]
+) -> str:
     """
     Runs external iqtree command to generate phylogeny
 
@@ -70,24 +71,22 @@ def run_iqtree(threads: int, iqtree: str, nexus: str, outgroup: str,
     #     '--msub', 'nuclear',
     #     '--merge', 'rclusterf',
     #     '-nt', str(threads)]
-    cmd: List[str] = [
-        iqtree,
-        '-p', nexus,
-        '-nt', str(threads)]
+    cmd: List[str] = [iqtree, '-p', nexus, '-nt', str(threads)]
     cmd.extend(opts)
     if outgroup:
         cmd.extend(['-o', outgroup])
     if os.path.exists(out_tree):
-        logger.info('Treefile {} already found. Skipping iqtree.'
-                    .format(out_tree))
+        logger.info('Treefile {} already found. Skipping iqtree.'.format(out_tree))
     else:
         logger.info('Running: {}'.format(' '.join(cmd)))
         subprocess.run(cmd)
         if not os.path.exists(out_tree):
             msg = 'iqtree2 seems to have failed.'
             logger.critical(msg)
-            msg = 'Check the log files for error messages to see if they can '\
+            msg = (
+                'Check the log files for error messages to see if they can '
                 'be resolved.'
+            )
             logger.critical(msg)
             end_program(73)
 

@@ -18,11 +18,12 @@ from .helper_functions import (
     checkpoint_tracker,
     remove_intermediates,
     end_program,
-    SUFFIXES
+    SUFFIXES,
 )
 from collections import defaultdict
 from rich.progress import track
 from signal import signal, SIGPIPE, SIGINT, SIG_DFL
+
 signal(SIGPIPE, SIG_DFL)
 signal(SIGINT, SIG_DFL)
 
@@ -39,8 +40,11 @@ def make_blast_database(makeblastdb: str, fasta: str) -> None:
     exist: List[bool] = [os.path.exists(fasta + x) for x in SUFFIXES]
     if not all(exist):
         with open(os.path.join('fasta', 'makeblastdb.log'), 'a') as textlog:
-            subprocess.run([makeblastdb, '-dbtype', 'nucl', '-in', fasta],
-                           stdout=textlog, stderr=subprocess.STDOUT)
+            subprocess.run(
+                [makeblastdb, '-dbtype', 'nucl', '-in', fasta],
+                stdout=textlog,
+                stderr=subprocess.STDOUT,
+            )
 
 
 def reader(fn: str) -> List[List[str]]:
@@ -51,15 +55,17 @@ def reader(fn: str) -> List[List[str]]:
     """
     dat: List[List[str]] = []
     with open(fn, 'r') as tsv:
-        tsvreader = csv.reader([row for row in tsv if not row.startswith('#')],
-                               delimiter='\t')
+        tsvreader = csv.reader(
+            [row for row in tsv if not row.startswith('#')], delimiter='\t'
+        )
         for row in tsvreader:
             dat.append(row)
     return dat
 
 
-def read_blast_results(blastfiles: List[str], coverage: int, identity: int,
-                       threads: int) -> pd.DataFrame:
+def read_blast_results(
+    blastfiles: List[str], coverage: int, identity: int, threads: int
+) -> pd.DataFrame:
     """
     Parses set of BLAST results. Expects list of files.
 
@@ -67,20 +73,32 @@ def read_blast_results(blastfiles: List[str], coverage: int, identity: int,
     return - pandas data frame of BLAST output
     """
     logger: logging.Logger = logging.getLogger(__name__)
-    headers: List[str] = ['qseqid', 'sseqid', 'saccver', 'pident', 'qlen',
-                          'length', 'bitscore', 'qcovhsp', 'stitle', 'sseq']
+    headers: List[str] = [
+        'qseqid',
+        'sseqid',
+        'saccver',
+        'pident',
+        'qlen',
+        'length',
+        'bitscore',
+        'qcovhsp',
+        'stitle',
+        'sseq',
+    ]
 
     logger.info('Reading BLAST results.')
-    dtypes: Dict[str, Any] = {'qseqid': 'category',
-                              'sseqid': 'category',
-                              'saccver': 'string',
-                              'pident': np.float,
-                              'qlen': np.int,
-                              'length': np.int,
-                              'bitscore': np.float,
-                              'qcovhsp': np.int,
-                              'stitle': 'string',
-                              'sseq': 'string'}
+    dtypes: Dict[str, Any] = {
+        'qseqid': 'category',
+        'sseqid': 'category',
+        'saccver': 'string',
+        'pident': np.float,
+        'qlen': np.int,
+        'length': np.int,
+        'bitscore': np.float,
+        'qcovhsp': np.int,
+        'stitle': 'string',
+        'sseq': 'string',
+    }
 
     results_fn: str = os.path.join('.autoMLSA', 'blast_results.tsv')
     if os.path.exists(results_fn):
@@ -92,28 +110,30 @@ def read_blast_results(blastfiles: List[str], coverage: int, identity: int,
         nfiles = len(blastfiles)
         p: multiprocessing.pool.Pool = Pool(threads)
         with p:
-            # with tqdm(total=nfiles, desc='Reading BLAST') as pbar:
-            #     for i, dat in enumerate(
-            #             p.imap_unordered(reader, blastfiles)):
-            #         pbar.update()
-            #         for row in dat:
-            #             blastrows.append(row)
-            for dat in track(p.imap_unordered(reader, blastfiles),
-                             'Reading Blast...'.rjust(19, ' '), nfiles):
+            for dat in track(
+                p.imap_unordered(reader, blastfiles),
+                'Reading Blast...'.rjust(19, ' '),
+                nfiles,
+            ):
                 for row in dat:
                     blastrows.append(row)
         results = pd.DataFrame(data=blastrows, columns=headers)
         results = results.astype(dtypes)
-        results.query('(pident >= @identity) & (qcovhsp >= @coverage)',
-                      inplace=True)
+        results.query('(pident >= @identity) & (qcovhsp >= @coverage)', inplace=True)
         results.to_csv(results_fn, sep='\t')
     checkpoint_tracker('read_blast_results')
-    return(results)
+    return results
 
 
-def print_blast_summary(runid: str, blastout: pd.DataFrame, labels: List[str],
-                        nallowed: int, missing_check: bool,
-                        checkpoint: bool, protect: bool) -> pd.DataFrame:
+def print_blast_summary(
+    runid: str,
+    blastout: pd.DataFrame,
+    labels: List[str],
+    nallowed: int,
+    missing_check: bool,
+    checkpoint: bool,
+    protect: bool,
+) -> pd.DataFrame:
     """
     Generates summary of BLAST results.
 
@@ -130,16 +150,14 @@ def print_blast_summary(runid: str, blastout: pd.DataFrame, labels: List[str],
     genome_map: Dict[str, int] = {k: i for i, k in enumerate(labels)}
 
     grouped: pd.DataFrame = blastout.groupby(['sseqid', 'qseqid'])
-    presence_matrix: pd.DataFrame = grouped.size().unstack('qseqid',
-                                                           fill_value=0)
+    presence_matrix: pd.DataFrame = grouped.size().unstack('qseqid', fill_value=0)
     label_indexes = list(map(int, presence_matrix.index.values))
     indexes: List[int] = presence_matrix.index.tolist()
     presence_matrix.index = [labels[i] for i in label_indexes]
     presence_matrix.to_csv('presence_matrix.tsv', sep='\t')
     summary['queries']['names'] = presence_matrix.columns.tolist()
     summary['queries']['count'] = len(presence_matrix.columns)
-    summary['genomes']['names'] = \
-        presence_matrix.index.tolist()  # type: ignore
+    summary['genomes']['names'] = presence_matrix.index.tolist()  # type: ignore
     summary['genomes']['indexes'] = indexes
     summary['genomes']['count'] = len(presence_matrix.index)
 
@@ -148,7 +166,8 @@ def print_blast_summary(runid: str, blastout: pd.DataFrame, labels: List[str],
     removal_candidates: Dict[str, str] = {}
     summary['queries']['missing'] = defaultdict(dict)
     zero_counts_query: pd.DataFrame = presence_matrix.apply(
-        lambda x: x[x == 0].index.tolist(), axis=0)
+        lambda x: x[x == 0].index.tolist(), axis=0
+    )
     zero_counts_query_dict: Dict[str, List[str]] = zero_counts_query.to_dict()
     for query, genomes in zero_counts_query_dict.items():
         ngenomes = len(genomes)
@@ -164,15 +183,16 @@ def print_blast_summary(runid: str, blastout: pd.DataFrame, labels: List[str],
     # Genomes
     summary['genomes']['missing'] = defaultdict(dict)
     zero_counts_genome: pd.DataFrame = presence_matrix.apply(
-        lambda x: x[x == 0].index.tolist(), axis=1)
-    zero_counts_genome_dict: Dict[str, List[str]] = \
-        zero_counts_genome.to_dict()
+        lambda x: x[x == 0].index.tolist(), axis=1
+    )
+    zero_counts_genome_dict: Dict[str, List[str]] = zero_counts_genome.to_dict()
     for genome, queries in zero_counts_genome_dict.items():
-        nmissing = len(queries)
+        nmissing: int = len(queries)
         summary['genomes']['missing'][genome]['queries'] = queries
         summary['genomes']['missing'][genome]['count'] = nmissing
-        summary['genomes']['missing'][genome]['percent'] = \
-            '{:.2f}'.format(nmissing / summary['queries']['count'] * 100)
+        summary['genomes']['missing'][genome]['percent'] = '{:.2f}'.format(
+            nmissing / summary['queries']['count'] * 100
+        )
         missing_count[nmissing].append(genome)
         if nmissing == 0:
             keeps.append(genome)
@@ -181,7 +201,7 @@ def print_blast_summary(runid: str, blastout: pd.DataFrame, labels: List[str],
     summary['genomes']['missing'] = dict(summary['genomes']['missing'])
 
     for genome in genome_missing_dict:
-        nmissing: int = len(genome_missing_dict[genome])
+        nmissing = len(genome_missing_dict[genome])
         if nmissing > nallowed:
             msg = 'Genome {} is going to be removed due to missing queries.'
             logger.warning(msg.format(genome))
@@ -195,29 +215,35 @@ def print_blast_summary(runid: str, blastout: pd.DataFrame, labels: List[str],
     logger.info(msg.format(len(keeps), '\n         - '.join(keeps)))
     keepsidx = [str(genome_map[x]) for x in keeps]
     json_writer(os.path.join('.autoMLSA', 'keepsidx.json'), keepsidx)
-    blastout_keeps: pd.DataFrame = blastout.query('sseqid in @keepsidx')\
-        .sort_values(['bitscore', 'qcovhsp'], ascending=False)\
-        .drop_duplicates(['qseqid', 'sseqid']).sort_index()
+    blastout_keeps: pd.DataFrame = (
+        blastout.query('sseqid in @keepsidx')
+        .sort_values(['bitscore', 'qcovhsp'], ascending=False)
+        .drop_duplicates(['qseqid', 'sseqid'])
+        .sort_index()
+    )
 
-    blastout_keeps.to_csv(os.path.join('.autoMLSA', 'blast_filtered.tsv'),
-                          sep='\t')
+    blastout_keeps.to_csv(os.path.join('.autoMLSA', 'blast_filtered.tsv'), sep='\t')
 
     # Estimate single copy
     # Currently UNUSED #
     single_copy: pd.DefaultDict = presence_matrix.apply(
-        lambda x: ((x.values == 1).sum() / len(presence_matrix)) >
-        SINGLE_COPY_ESTIMATE,
-        axis=0)
-    json_writer(os.path.join('.autoMLSA', 'single_copy.json'),
-                single_copy.to_dict())
+        lambda x: ((x.values == 1).sum() / len(presence_matrix)) > SINGLE_COPY_ESTIMATE,
+        axis=0,
+    )
+    json_writer(os.path.join('.autoMLSA', 'single_copy.json'), single_copy.to_dict())
     json_writer('missing_counts.json', missing_count)
     json_writer('blast_summary.json', summary)
     json_writer('missing_by_genome.json', genome_missing_dict)
     if len(keeps) < summary['genomes']['count']:
-        logger.warning('Some genomes ({}) are missing one or more genes'
-                       .format(len(genome_missing_dict)))
-        logger.warning('Check out the presence_matrix.tsv, and '
-                       'missing_by_genome.json files to review.')
+        logger.warning(
+            'Some genomes ({}) are missing one or more genes'.format(
+                len(genome_missing_dict)
+            )
+        )
+        logger.warning(
+            'Check out the presence_matrix.tsv, and '
+            'missing_by_genome.json files to review.'
+        )
         if removal_candidates:
             logger.warning('Consider removing these genes from the analysis:')
             for query, percent in removal_candidates.items():
@@ -246,7 +272,7 @@ def print_blast_summary(runid: str, blastout: pd.DataFrame, labels: List[str],
 
     checkpoint_tracker('print_blast_summary')
 
-    return(blastout_keeps)
+    return blastout_keeps
 
 
 def print_fasta_files(blastout: pd.DataFrame, labels: List[str]) -> List[str]:
@@ -268,8 +294,7 @@ def print_fasta_files(blastout: pd.DataFrame, labels: List[str]) -> List[str]:
         fasta: str = os.path.join(fastdir, '{}.fas'.format(name))
         unaligned.append(fasta)
         if os.path.exists(fasta):
-            logger.debug('Unaligned file {} already found, skipping.'
-                         .format(fasta))
+            logger.debug('Unaligned file {} already found, skipping.'.format(fasta))
         else:
             if os.path.exists(fasta):
                 text = 'Overwriting'
@@ -283,12 +308,18 @@ def print_fasta_files(blastout: pd.DataFrame, labels: List[str]) -> List[str]:
 
     checkpoint_tracker('print_fasta_files')
 
-    return(unaligned)
+    return unaligned
 
 
-def generate_blast_list(rundir: str, exe: str, queries: List[str], targets:
-                        List[str], evalue: float, threads: int,
-                        checkpoint: bool) -> List[str]:
+def generate_blast_list(
+    rundir: str,
+    exe: str,
+    queries: List[str],
+    targets: List[str],
+    evalue: float,
+    threads: int,
+    checkpoint: bool,
+) -> List[str]:
     """
     Generates list of BLAST searches that need to be run
 
@@ -300,8 +331,9 @@ def generate_blast_list(rundir: str, exe: str, queries: List[str], targets:
     # blastout = defaultdict(list)
     blastout: List[str] = []
     blastdir: str = os.path.join(rundir, 'blast')
-    outfmt: str = '7 qseqid sseqid saccver pident qlen length bitscore '\
-        'qcovhsp stitle sseq'
+    outfmt: str = (
+        '7 qseqid sseqid saccver pident qlen length bitscore ' 'qcovhsp stitle sseq'
+    )
     base_cmd: List[str] = [exe, '-evalue', str(evalue), '-outfmt', outfmt]
     cmd: List[str] = []
     if not os.path.exists(blastdir):
@@ -313,9 +345,7 @@ def generate_blast_list(rundir: str, exe: str, queries: List[str], targets:
             outname: str = '{}_vs_{}.tab'.format(query_base, target_base)
             outpath: str = os.path.join(blastdir, outname)
             blastout.append(os.path.join(outpath))
-            cmd = base_cmd + ['-db', target,
-                              '-query', query,
-                              '-out', outpath]
+            cmd = base_cmd + ['-db', target, '-query', query, '-out', outpath]
             if not os.path.exists(outpath) or os.path.getsize(outpath) == 0:
                 cmds.append(cmd)
 
@@ -334,17 +364,14 @@ def generate_blast_list(rundir: str, exe: str, queries: List[str], targets:
             logger.info(msg.format(ncmds, threads))
             p: multiprocessing.pool.Pool = Pool(threads)
             with p:
-                # with tqdm(total=ncmds, desc='BLAST Search') as pbar:
-                #     for i, _ in enumerate(
-                #             p.imap_unordered(subprocess.run, cmds)):
-                #         pbar.update()
-                # p.map(subprocess.run, cmds)
-                for _ in track(p.imap_unordered(subprocess.run, cmds),
-                               'Blast Search...'.rjust(19, ' '), ncmds):
+                for _ in track(
+                    p.imap_unordered(subprocess.run, cmds),
+                    'Blast Search...'.rjust(19, ' '),
+                    ncmds,
+                ):
                     pass
     else:
         logger.info('No BLAST searches remaining. Moving to parse.')
 
-    open(os.path.join('.autoMLSA', 'checkpoint', 'generate_blast_list'),
-         'w').close()
+    open(os.path.join('.autoMLSA', 'checkpoint', 'generate_blast_list'), 'w').close()
     return blastout

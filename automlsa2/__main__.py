@@ -14,7 +14,7 @@ from .blast_functions import (
     read_blast_results,
     print_blast_summary,
     print_fasta_files,
-    generate_blast_list
+    generate_blast_list,
 )
 from .configuration import read_config, validate_arguments, get_labels
 from .formatting import convert_fasta, get_queries
@@ -22,6 +22,7 @@ from .mafft import run_mafft
 from .phylogeny import generate_nexus, run_iqtree
 from signal import signal, SIGPIPE, SIGINT, SIG_DFL
 from .__version__ import __version__
+
 signal(SIGPIPE, SIG_DFL)
 signal(SIGINT, SIG_DFL)
 
@@ -50,38 +51,52 @@ def main() -> None:
     # FORMATTING SECTION ------------------------------------------------------
     logger.info('Converting genome FASTA files for BLAST if necessary.')
     labels: List[str] = get_labels(args.rundir, args.fasta)
-    newfastas: List[str] = convert_fasta(args.rundir, args.fasta, labels,
-                                         exes['makeblastdb'], args.runid,
-                                         args.protect)
+    newfastas: List[str] = convert_fasta(
+        args.rundir, args.fasta, labels, exes['makeblastdb'], args.runid, args.protect
+    )
 
     logger.info('Extracting query FASTA files if necessary.')
-    queries: List[str] = get_queries(args.runid, args.rundir, args.dups,
-                                     args.query, args.protect)
+    queries: List[str] = get_queries(
+        args.runid, args.rundir, args.dups, args.query, args.protect
+    )
 
     # BLAST SECTION -----------------------------------------------------------
     logger.info('Generating list of BLAST searches and outputs.')
     blastout: List[str] = generate_blast_list(
-        args.rundir, exes[args.program], queries, newfastas, args.evalue,
-        args.threads, args.checkpoint == 'preblast')
+        args.rundir,
+        exes[args.program],
+        queries,
+        newfastas,
+        args.evalue,
+        args.threads,
+        args.checkpoint == 'preblast',
+    )
 
     # BLAST output results, summary, and files --------------------------------
-    blastres: pd.DataFrame = read_blast_results(blastout, args.coverage,
-                                                args.identity, args.threads)
+    blastres: pd.DataFrame = read_blast_results(
+        blastout, args.coverage, args.identity, args.threads
+    )
     blastfilt: pd.DataFrame = print_blast_summary(
-        args.runid, blastres, labels, args.allow_missing,
-        args.missing_check, args.checkpoint == 'filtering', args.protect)
+        args.runid,
+        blastres,
+        labels,
+        args.allow_missing,
+        args.missing_check,
+        args.checkpoint == 'filtering',
+        args.protect,
+    )
     unaligned: List[str] = print_fasta_files(blastfilt, labels)
 
     # ALIGNMENT SECTION -------------------------------------------------------
     aligned: List[str] = run_mafft(
-        args.threads, exes['mafft'], unaligned, args.checkpoint,
-        shlex.split(args.mafft))
+        args.threads, exes['mafft'], unaligned, args.checkpoint, shlex.split(args.mafft)
+    )
 
     # PHYLOGENY SECTION -------------------------------------------------------
-    nexus: str = generate_nexus(args.runid, aligned, args.checkpoint ==
-                                'nexus')
-    treefile: str = run_iqtree(args.threads, exes['iqtree'], nexus,
-                               args.outgroup, shlex.split(args.iqtree))
+    nexus: str = generate_nexus(args.runid, aligned, args.checkpoint == 'nexus')
+    treefile: str = run_iqtree(
+        args.threads, exes['iqtree'], nexus, args.outgroup, shlex.split(args.iqtree)
+    )
     exit_successfully(args.rundir, treefile)
 
 

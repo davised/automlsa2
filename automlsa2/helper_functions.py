@@ -8,32 +8,37 @@ import logging
 from typing import List
 from hashlib import blake2b
 from signal import signal, SIGPIPE, SIGINT, SIG_DFL
+
 signal(SIGPIPE, SIG_DFL)
 signal(SIGINT, SIG_DFL)
 
 SUFFIXES = ['.nsq', '.nin', '.nhr', '.nto', '.not', '.ndb', '.ntf']
 
 
-def remove_intermediates(runid: str, intermediates: List[str], protect: bool)\
-        -> None:
+def remove_intermediates(runid: str, intermediates: List[str], protect: bool) -> None:
     logger = logging.getLogger(__name__)
     if protect:
         msg = 'One or more intermediates of {} type need to be removed'
         logger.info(msg.format(','.join(intermediates)))
-        msg = 'Delete the "protect" flag in the config.json file or restart '\
+        msg = (
+            'Delete the "protect" flag in the config.json file or restart '
             'your analysis with another runid to continue.'
+        )
         logger.info(msg)
         end_program(1)
 
-    genome_tmpfiles = ['blast_results.tsv', 'keepsidx.json',
-                       'single_copy.json', 'blast_filtered.tsv',
-                       'expected_filt.json']
+    genome_tmpfiles = [
+        'blast_results.tsv',
+        'keepsidx.json',
+        'single_copy.json',
+        'blast_filtered.tsv',
+        'expected_filt.json',
+    ]
     if 'genome' in intermediates:
         for deldir in ['unaligned', 'aligned']:
             if os.path.exists(deldir):
                 shutil.rmtree(deldir)
-        for fullname in [os.path.join('.autoMLSA', fn) for
-                         fn in genome_tmpfiles]:
+        for fullname in [os.path.join('.autoMLSA', fn) for fn in genome_tmpfiles]:
             if os.path.exists(fullname):
                 os.remove(fullname)
     for delfile in glob.iglob(runid + '.nex*'):
