@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from setuptools import find_packages, setup  # type: ignore
 
 with open('automlsa2/__version__.py', 'r') as f:
