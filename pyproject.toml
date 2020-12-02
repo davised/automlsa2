@@ -24,3 +24,6 @@ exclude = '''
   | dist
 )/
 '''
+
+[tool.pytest.ini_options]
+flake8-max-line-length = 99
