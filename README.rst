@@ -1,10 +1,27 @@
 automlsa2
 =========
 
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://github.com/psf/black
+.. image:: https://badge.fury.io/gh/davised%2Fautomlsa2.svg
+    :alt: GitHub version
+    :target: https://badge.fury.io/gh/davised%2Fautomlsa2
 .. image:: https://badge.fury.io/py/automlsa2.svg
+    :alt: PyPI package version
     :target: https://badge.fury.io/py/automlsa2
+.. image:: https://img.shields.io/github/last-commit/davised/automlsa2
+    :alt: Latest commit
+    :target: https://github.com/davised/automlsa2/commits
+.. image:: https://img.shields.io/github/commits-since/davised/automlsa2/latest
+    :alt: GitHub commits since latest release (by date)
+    :target: https://github.com/davised/automlsa2/releases/latest
+.. image:: https://img.shields.io/pypi/dm/automlsa2
+    :alt: Downloads per month
+    :target: https://badge.fury.io/py/automlsa2
+.. image:: https://img.shields.io/tokei/lines/github/davised/automlsa2
+    :alt: Lines of code
+    :target: https://github.com/davised/automlsa2.git
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :alt: Black format
+    :target: https://github.com/psf/black
 .. image:: https://img.shields.io/github/issues/davised/automlsa2
     :alt: GitHub issues
     :target: https://github.com/davised/automlsa2/issues
