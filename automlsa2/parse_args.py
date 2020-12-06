@@ -125,6 +125,9 @@ def init_logger(debug: bool, quiet: bool, rundir: str, runid: str) -> \
     logger.setLevel(logging.DEBUG)
 
     stderr_handler = RichHandler(rich_tracebacks=True)
+    if not sys.stderr.isatty():
+        stderr_handler = RichHandler(rich_tracebacks=True,
+                                     console=Console(width=119))
     if debug:
         stderr_handler.setLevel(logging.DEBUG)
     elif quiet:
