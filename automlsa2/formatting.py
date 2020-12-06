@@ -1,8 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import logging
 import os
 import json
 import glob
+
 # from tqdm import tqdm  # type: ignore
 from rich.progress import track
 from .helper_functions import (
@@ -10,7 +12,7 @@ from .helper_functions import (
     json_writer,
     remove_intermediates,
     end_program,
-    sanitize_path
+    sanitize_path,
 )
 from .blast_functions import make_blast_database
 from Bio import SeqIO  # type: ignore
@@ -19,8 +21,14 @@ from typing import List, Dict, Any
 from shutil import copy
 
 
-def convert_fasta(rundir: str, fastas: List[str], labels: List[str],
-                  makeblastdb: str, runid: str, protect: bool) -> List[str]:
+def convert_fasta(
+    rundir: str,
+    fastas: List[str],
+    labels: List[str],
+    makeblastdb: str,
+    runid: str,
+    protect: bool,
+) -> List[str]:
     """Converts fasta file with placeholder label names
 
     input - unformatted fasta files
@@ -66,13 +74,11 @@ def convert_fasta(rundir: str, fastas: List[str], labels: List[str],
             seqhash = generate_hash(seq)
             rename_info[base]['hash'] = seqhash
     logger.info('Generating and/or validating BLAST DBs.')
-    for labelfastaf in track(new_fastas,
-                             'makeblastdb...'.rjust(19, ' ')):
+    for labelfastaf in track(new_fastas, 'makeblastdb...'.rjust(19, ' ')):
         make_blast_database(makeblastdb, labelfastaf)
     json_writer(renamef, rename_info)
 
-    expected_fastas_fn: str = os.path.join(rundir, '.autoMLSA',
-                                           'expected_fastas.json')
+    expected_fastas_fn: str = os.path.join(rundir, '.autoMLSA', 'expected_fastas.json')
     if os.path.exists(expected_fastas_fn):
         with open(expected_fastas_fn, 'r') as eff:
             expected_fastas: List[str] = json.load(eff)
@@ -99,7 +105,8 @@ def check_hash(fasta: str, base: str, seqhash: str) -> bool:
     deleted: bool = False
     with open(fasta, 'r') as ff:
         newseqhash = generate_hash(
-            ''.join([str(rec.seq) for rec in SeqIO.parse(ff, 'fasta')]))
+            ''.join([str(rec.seq) for rec in SeqIO.parse(ff, 'fasta')])
+        )
     if newseqhash != seqhash:
         deleted = True
         msg = 'Old genome file {} sequence has changed. Updating.'
@@ -113,8 +120,9 @@ def check_hash(fasta: str, base: str, seqhash: str) -> bool:
     return deleted
 
 
-def get_queries(runid: str, rundir: str, dups: bool, queries: List[str],
-                protect: bool) -> List[str]:
+def get_queries(
+    runid: str, rundir: str, dups: bool, queries: List[str], protect: bool
+) -> List[str]:
     """Converts query fasta file(s) into individual fastas for BLAST
 
     input - FASTA files with queries as individual entries
@@ -143,8 +151,10 @@ def get_queries(runid: str, rundir: str, dups: bool, queries: List[str],
                 logger.critical(msg.format(query_file))
                 msg = 'No backup was found in the backups directory.'
                 logger.critical(msg)
-                msg = 'Unable to continue without the queries. Either replace'\
+                msg = (
+                    'Unable to continue without the queries. Either replace'
                     ' the file or start again from a new analysis.'
+                )
                 logger.critical(msg)
                 end_program(66)
         with open(query_file, 'r') as qf:
@@ -159,29 +169,37 @@ def get_queries(runid: str, rundir: str, dups: bool, queries: List[str],
                 elif seqhash in hashes and hashes[seqhash] != safeid:
                     # Same seq but different names, throw error
                     mismatchid: str = hashes[seqhash]
-                    msg = 'Same sequence found in two query inputs with '\
+                    msg = (
+                        'Same sequence found in two query inputs with '
                         'different sequence IDs:'
+                    )
                     logger.error(msg)
                     msg = '+++++++++++++++Offending queries+++++++++++++++'
                     logger.error(msg)
                     if query_file == seen[mismatchid]['path']:
                         msg = '{} - TWICE - header ID {} & {}'
                         logger.error(
-                            msg.format(os.path.basename(query_file),
-                                       seen[mismatchid]['unsafeid'],
-                                       rec.id))
+                            msg.format(
+                                os.path.basename(query_file),
+                                seen[mismatchid]['unsafeid'],
+                                rec.id,
+                            )
+                        )
                     else:
                         msg = '{} header ID {}'
-                        logger.error(
-                            msg.format(os.path.basename(query_file), rec.id))
+                        logger.error(msg.format(os.path.basename(query_file), rec.id))
                         logger.error(
                             msg.format(
                                 os.path.basename(seen[mismatchid]['path']),
-                                seen[mismatchid]['unsafeid']))
+                                seen[mismatchid]['unsafeid'],
+                            )
+                        )
                     msg = '+++++++++++++++++++++++++++++++++++++++++++++++'
                     logger.error(msg)
-                    msg = 'Check your sequences to make sure they aren\'t '\
+                    msg = (
+                        'Check your sequences to make sure they aren\'t '
                         'misnamed, fix the problem, and try again.'
+                    )
                     logger.error(msg)
                     end_program(65)
                 else:
@@ -197,29 +215,36 @@ def get_queries(runid: str, rundir: str, dups: bool, queries: List[str],
                     if query_file == seen[safeid]['path']:
                         msg = '{} - TWICE - sequences {} & {}'
                         logger.error(
-                            msg.format(os.path.basename(query_file),
-                                       seen[safeid]['index'], i))
+                            msg.format(
+                                os.path.basename(query_file), seen[safeid]['index'], i
+                            )
+                        )
                     else:
                         msg = '{} sequence {}'
+                        logger.error(msg.format(os.path.basename(query_file), i))
                         logger.error(
-                            msg.format(os.path.basename(query_file), i))
-                        logger.error(
-                            msg.format(os.path.basename(seen[safeid]['path']),
-                                       seen[safeid]['index']))
+                            msg.format(
+                                os.path.basename(seen[safeid]['path']),
+                                seen[safeid]['index'],
+                            )
+                        )
                     msg = '+++++++++++++++++++++++++++++++++++++++++++++++'
                     logger.error(msg)
                     msg = 'Remove or rename one of these to continue.'
                     logger.error(msg)
-                    msg = 'Alternatively, if this is intended, use the --dups'\
+                    msg = (
+                        'Alternatively, if this is intended, use the --dups'
                         ' flag to include both copies.'
+                    )
                     logger.error(msg)
                     end_program(65)
                 else:
                     if safeid in seen and dups:
-                        msg = 'Keeping additional query {} with duplicate ID '\
+                        msg = (
+                            'Keeping additional query {} with duplicate ID '
                             'from file {}.'
-                        logger.info(msg.format(safeid,
-                                               os.path.basename(query_file)))
+                        )
+                        logger.info(msg.format(safeid, os.path.basename(query_file)))
                     seen[safeid] = {}
                     seen[safeid]['path'] = query_file
                     seen[safeid]['index'] = str(i)
@@ -229,8 +254,11 @@ def get_queries(runid: str, rundir: str, dups: bool, queries: List[str],
                 new_queries.append(fn)
                 if not os.path.exists(fn):
                     msg = 'Writing {} for seq {} in {}'
-                    logger.debug(msg.format(os.path.basename(fn), i,
-                                            os.path.basename(query_file)))
+                    logger.debug(
+                        msg.format(
+                            os.path.basename(fn), i, os.path.basename(query_file)
+                        )
+                    )
                     with open(fn, 'w') as fh:
                         fh.write('>{}\n'.format(safeid))
                         fh.write('{}\n'.format(rec.seq))
@@ -239,8 +267,7 @@ def get_queries(runid: str, rundir: str, dups: bool, queries: List[str],
             copy(query_file, backups)
 
     # Check if expected equals new_queries
-    expected_queries_fn = os.path.join(rundir, '.autoMLSA',
-                                       'expected_queries.json')
+    expected_queries_fn = os.path.join(rundir, '.autoMLSA', 'expected_queries.json')
     if os.path.exists(expected_queries_fn):
         logger.debug('Reading query file {}'.format(expected_queries_fn))
         with open(expected_queries_fn, 'r') as eqf:

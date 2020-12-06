@@ -1,8 +1,59 @@
 automlsa2
 =========
 
+.. image:: https://badge.fury.io/gh/davised%2Fautomlsa2.svg
+    :alt: GitHub version
+    :target: https://badge.fury.io/gh/davised%2Fautomlsa2
+.. image:: https://badge.fury.io/py/automlsa2.svg
+    :alt: PyPI package version
+    :target: https://badge.fury.io/py/automlsa2
+.. image:: https://img.shields.io/github/last-commit/davised/automlsa2
+    :alt: Latest commit
+    :target: https://github.com/davised/automlsa2/commits
+.. image:: https://img.shields.io/github/commits-since/davised/automlsa2/latest
+    :alt: GitHub commits since latest release (by date)
+    :target: https://github.com/davised/automlsa2/releases/latest
+.. image:: https://img.shields.io/pypi/dm/automlsa2
+    :alt: Downloads per month
+    :target: https://badge.fury.io/py/automlsa2
+.. image:: https://img.shields.io/tokei/lines/github/davised/automlsa2
+    :alt: Lines of code
+    :target: https://github.com/davised/automlsa2.git
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :alt: Black format
+    :target: https://github.com/psf/black
+.. image:: https://img.shields.io/github/issues/davised/automlsa2
+    :alt: GitHub issues
+    :target: https://github.com/davised/automlsa2/issues
+.. image:: https://img.shields.io/github/forks/davised/automlsa2
+    :alt: GitHub forks
+    :target: https://github.com/davised/automlsa2/network
+.. image:: https://img.shields.io/github/stars/davised/automlsa2
+    :alt: GitHub stars
+    :target: https://github.com/davised/automlsa2/stargazers
+
 .. contents:: **Table of Contents**
     :backlinks: none
+
+Who might want this software?
+-----------------------------
+
+The intended audience is scientific researchers, computational biologists, and
+bioinformaticians who are interested in exploring phylogenetic and phylogenomic
+relationships between genes and organisms. The general idea is to allow the
+input of sequence data along with marker genes and output a robust phylogenetic
+tree. I've implemented commands to help with the installation of external
+dependencies, and I hope the software is easy to use.
+
+If you have feature requests or otherwise have ideas about how to make this
+software better, please submit an issue with your ideas!
+
+PhD/Masters students and undergraduates are especially encouraged to submit
+issues if they are having trouble using this software.
+
+Windows users, please install WSL to make use of this software. Using a Linux
+distribution will make your life as a computational researcher significantly
+easier.
 
 Installation
 ------------
@@ -32,7 +83,7 @@ Python modules:
 1. pandas
 2. numpy
 3. biopython
-4. tqdm
+4. rich
 
 See ``requirements.txt`` for more info.
 
@@ -120,43 +171,31 @@ Usage
 
 optional arguments:
 
--h, --help            show this help message and exit
---query <QUERY [QUERY ...]>
-                      Path to file with input seq(s).
---files <FILES [FILES ...]>
-                      Path to the target genome FASTA files.
---dir <DIR [DIR ...]>
-                      Path to the target genome directory with FASTA files.
--e EVALUE, --evalue EVALUE
-                      E-value cutoff for BLAST searches. [1e-5]
--c COVERAGE, --coverage COVERAGE
-                      Sets the coverage cut-off threshold. [50]
--i IDENTITY, --identity IDENTITY
-                      Sets the identity cut-off threshold. [30]
--p PROGRAM, --program PROGRAM
-                      Which BLAST program to run. [tblastn]
-                      {tblastn, blastn}
---config CONFIG       Path to configuration json file to copy.
---missing_check       Use this to confirm that settings have been checked when
-                      genes are missing.
--t THREADS, --threads THREADS
-                      Number of threads to use. [1]
---dups                Allow for duplicate query names for more sequence
-                      coverage across disparate organisms.
---allow_missing ALLOW_MISSING
-                      Allow for N missing genes per genome. [0]
---outgroup OUTGROUP   Name of outgroup file or strain to root on.
---protect             Save files from getting overwritten. By default, as input
-                      files update, older alignments and trees are deleted.
---checkpoint CHECKPOINT
-                      Name of stage to stop computing on. [none]
-                      {validate,preblast,filtering,prealign,postalign,nexus,none}
---install_deps <[INSTALL_DEPS]>
-                      Install dependencies into given directory. [~/.local/external]
---external EXTERNAL   Path to installed external programs. [~/.local/external]
---debug               Turn on debugging messages.
---version             show program's version number and exit
---quiet               Turn off progress messages.
+-h, --help                        show this help message and exit
+--query <QUERY [QUERY ...]>       Path to file with input seq(s).
+--files <FILES [FILES ...]>       Path to the target genome FASTA files.
+--dir <DIR [DIR ...]>             Path to the target genome directory with FASTA files.
+-e EVALUE, --evalue EVALUE        E-value cutoff for BLAST searches. [1e-5]
+-c COVERAGE, --coverage COVERAGE  Sets the coverage cut-off threshold. [50]
+-i IDENTITY, --identity IDENTITY  Sets the identity cut-off threshold. [30]
+-p PROGRAM, --program PROGRAM     Which BLAST program to run. [tblastn] {tblastn, blastn}
+--config CONFIG                   Path to configuration json file to copy.
+--missing_check                   Use this to confirm that settings have been
+                                  checked when genes are missing.
+-t THREADS, --threads THREADS     Number of threads to use. [1]
+--dups                            Allow for duplicate query names for more sequence
+                                  coverage across disparate organisms.
+--allow_missing ALLOW_MISSING     Allow for N missing genes per genome. [0]
+--outgroup OUTGROUP               Name of outgroup file or strain to root on.
+--protect                         Save files from getting overwritten. By default, as input
+                                  files update, older alignments and trees are deleted.
+--checkpoint CHECKPOINT           Name of stage to stop computing on. [none]
+                                  {validate,preblast,filtering,prealign,postalign,nexus,none}
+--install_deps <[INSTALL_DEPS]>   Install dependencies into given directory. [~/.local/external]
+--external EXTERNAL               Path to installed external programs. [~/.local/external]
+--debug                           Turn on debugging messages.
+--version                         show program's version number and exit
+--quiet                           Turn off progress messages.
 
 One or more input target genome FASTA files is required, either using
 ``--files`` or ``--dir``. Additionally, one or more query FASTA files

@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import logging
 import os
 import glob
@@ -62,8 +63,9 @@ def read_config(configfile: str) -> Dict[str, Any]:
     return config
 
 
-def validate_arguments(args: argparse.Namespace, config: dict,
-                       checkpoint: bool) -> argparse.Namespace:
+def validate_arguments(
+    args: argparse.Namespace, config: dict, checkpoint: bool
+) -> argparse.Namespace:
     """Checks for executables as well as makes sure files exist.
 
     input  - args from argparse; config from config file
@@ -132,8 +134,7 @@ def validate_arguments(args: argparse.Namespace, config: dict,
             if check:
                 changed = True
     if args.allow_missing is None:
-        if 'allow_missing' in config.keys() and \
-                config['allow_missing'] is not None:
+        if 'allow_missing' in config.keys() and config['allow_missing'] is not None:
             args.allow_missing = int(config['allow_missing'])
         else:
             args.allow_missing = 0
@@ -146,8 +147,7 @@ def validate_arguments(args: argparse.Namespace, config: dict,
             if check:
                 changed = True
     if not args.missing_check:
-        if 'missing_check' in config.keys() and \
-                config['missing_check']:
+        if 'missing_check' in config.keys() and config['missing_check']:
             args.allow_missing = True
         else:
             args.missing_check = False
@@ -194,8 +194,9 @@ def validate_arguments(args: argparse.Namespace, config: dict,
         if 'iqtree' in config.keys() and config['iqtree'] is not None:
             args.iqtree = config['iqtree']
         else:
-            args.iqtree = ('-m MFP -B 1000 -alrt 1000 --msub nuclear --merge '
-                           'rclusterf')
+            args.iqtree = (
+                '-m MFP -B 1000 -alrt 1000 --msub nuclear --merge ' 'rclusterf'
+            )
     else:
         try:
             check = args.iqtree != config['iqtree']
@@ -251,10 +252,11 @@ def validate_arguments(args: argparse.Namespace, config: dict,
 
     cmd = 'lscpu | grep -G "^CPU(s):" | grep -o -E "[0-9]+"'
     try:
-        maxthreads = subprocess.check_output(cmd,
-                                             shell=True,
-                                             stderr=subprocess.STDOUT
-                                             ).decode().strip()
+        maxthreads = (
+            subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
+            .decode()
+            .strip()
+        )
     except subprocess.CalledProcessError:
         msg = 'Unable to check number of available threads.'
         logger.warning(msg)
@@ -263,8 +265,7 @@ def validate_arguments(args: argparse.Namespace, config: dict,
     else:
         logger.debug('Max threads found {}'.format(maxthreads))
         if args.threads > int(maxthreads):
-            msg = 'Threads specified {} greater than number of available ' \
-                  'threads {}'
+            msg = 'Threads specified {} greater than number of available ' 'threads {}'
             logger.error(msg.format(args.threads, maxthreads))
             msg = 'Specify threads less than or equal to {} and try again.'
             logger.error(msg.format(maxthreads))
