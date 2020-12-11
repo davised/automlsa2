@@ -1,12 +1,21 @@
 automlsa2
 =========
 
+.. image:: https://forthebadge.com/images/badges/built-with-science.svg
+    :alt: Made with science
+    :target: https://cgrb.oregonstate.edu
 .. image:: https://badge.fury.io/gh/davised%2Fautomlsa2.svg
     :alt: GitHub version
     :target: https://badge.fury.io/gh/davised%2Fautomlsa2
 .. image:: https://badge.fury.io/py/automlsa2.svg
     :alt: PyPI package version
     :target: https://badge.fury.io/py/automlsa2
+.. image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
+    :alt: Maintained? Yes
+    :target: https://github.com/davised/automlsa2/graphs/commit-activity
+.. image:: https://img.shields.io/badge/Made%20with-Python-1f425f.svg
+    :alt: Made with python
+    :target: https://python.org
 .. image:: https://img.shields.io/github/last-commit/davised/automlsa2
     :alt: Latest commit
     :target: https://github.com/davised/automlsa2/commits
@@ -74,6 +83,12 @@ git version install:
     $ cd automlsa2
     $ python3 -m pip install -r requirements.txt
     $ python3 -m pip install -U .
+
+for developers:
+
+.. code-block:: bash
+
+    $ python3 -m pip install -e . --no-use-pep517
 
 Dependencies
 ------------
