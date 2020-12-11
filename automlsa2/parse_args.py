@@ -16,6 +16,7 @@ from .validate_requirements import (
     install_iqtree,
 )
 from .__version__ import __version__
+from ._settings import MAFFT, IQTREE
 
 
 class InstallDeps(argparse.Action):
@@ -129,8 +130,7 @@ def init_logger(debug: bool, quiet: bool, rundir: str, runid: str) -> None:
 
     stderr_handler = RichHandler(rich_tracebacks=True)
     if not sys.stderr.isatty():
-        stderr_handler = RichHandler(rich_tracebacks=True,
-                                     console=Console(width=119))
+        stderr_handler = RichHandler(rich_tracebacks=True, console=Console(width=119))
     if debug:
         stderr_handler.setLevel(logging.DEBUG)
     elif quiet:
@@ -241,15 +241,8 @@ def run_argparse() -> argparse.Namespace:
         help='Path to installed external programs. ' '[~/.local/external]',
         type=extant_file,
     )
-    parser.add_argument(
-        '--mafft', help='mafft settings [--localpair --maxiterate 1000]', type=str
-    )
-    parser.add_argument(
-        '--iqtree',
-        help='iqtree2 settings '
-        '[-m MFP -B 1000 -alrt 1000 --msub nuclear --merge rclusterf]',
-        type=str,
-    )
+    parser.add_argument('--mafft', help=f'mafft settings [{MAFFT}]', type=str)
+    parser.add_argument('--iqtree', help=f'iqtree2 settings [{IQTREE}]', type=str)
     parser.add_argument(
         '--debug',
         help='Turn on debugging messages.',

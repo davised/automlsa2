@@ -15,6 +15,7 @@ from .helper_functions import (
     json_writer,
     remove_intermediates,
 )
+from ._settings import MAFFT, IQTREE
 
 
 def get_fasta_list(dirpath: str, rundir: str) -> List[str]:
@@ -194,9 +195,7 @@ def validate_arguments(
         if 'iqtree' in config.keys() and config['iqtree'] is not None:
             args.iqtree = config['iqtree']
         else:
-            args.iqtree = (
-                '-m MFP -B 1000 -alrt 1000 --msub nuclear --merge ' 'rclusterf'
-            )
+            args.iqtree = IQTREE
     else:
         try:
             check = args.iqtree != config['iqtree']
@@ -210,7 +209,7 @@ def validate_arguments(
         if 'mafft' in config.keys() and config['mafft'] is not None:
             args.mafft = config['mafft']
         else:
-            args.mafft = '--localpair --maxiterate 1000'
+            args.mafft = MAFFT
     else:
         try:
             check = args.mafft != config['mafft']
