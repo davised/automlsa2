@@ -4,12 +4,15 @@ automlsa2
 .. image:: https://forthebadge.com/images/badges/built-with-science.svg
     :alt: Made with science
     :target: https://cgrb.oregonstate.edu
-.. image:: https://badge.fury.io/gh/davised%2Fautomlsa2.svg
+.. image:: https://img.shields.io/github/v/release/davised/automlsa2
     :alt: GitHub version
-    :target: https://badge.fury.io/gh/davised%2Fautomlsa2
-.. image:: https://badge.fury.io/py/automlsa2.svg
+    :target: https://github.com/davised/automlsa2/releases/latest
+.. image:: https://img.shields.io/pypi/v/automlsa2
     :alt: PyPI package version
-    :target: https://badge.fury.io/py/automlsa2
+    :target: https://pypi.org/project/automlsa2
+.. image:: https://img.shields.io/github/release-date/davised/automlsa2
+    :alt: GitHub Release Date
+    :target: https://github.com/davised/automlsa2/releases
 .. image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
     :alt: Maintained? Yes
     :target: https://github.com/davised/automlsa2/graphs/commit-activity
@@ -21,10 +24,10 @@ automlsa2
     :target: https://github.com/davised/automlsa2/commits
 .. image:: https://img.shields.io/github/commits-since/davised/automlsa2/latest
     :alt: GitHub commits since latest release (by date)
-    :target: https://github.com/davised/automlsa2/releases/latest
+    :target: https://github.com/davised/automlsa2/commits/main
 .. image:: https://img.shields.io/pypi/dm/automlsa2
     :alt: Downloads per month
-    :target: https://badge.fury.io/py/automlsa2
+    :target: https://pypistats.org/packages/automlsa2
 .. image:: https://img.shields.io/tokei/lines/github/davised/automlsa2
     :alt: Lines of code
     :target: https://github.com/davised/automlsa2.git
@@ -75,6 +78,9 @@ supports Python 3.7+ and PyPy.
 
     $ python3 -m pip install -U automlsa2
 
+While I will do my best to keep the git version usable, stick to a release
+and/or pypi install for the most stable experience.
+
 git version install:
 
 .. code-block:: bash
@@ -84,7 +90,7 @@ git version install:
     $ python3 -m pip install -r requirements.txt
     $ python3 -m pip install -U .
 
-for developers:
+for developers, clone as above, then:
 
 .. code-block:: bash
 
@@ -176,7 +182,8 @@ Usage
                  [--outgroup OUTGROUP] [--protect]
                  [--checkpoint {validate,preblast,filtering,prealign,postalign,nexus,none}]
                  [--install_deps [INSTALL_DEPS]] [--external EXTERNAL]
-                 [--debug] [--version] [--quiet]
+                 [--mafft MAFFT] [--iqtree IQTREE] [--debug] [--version]
+                 [--quiet]
                  runid
 
     This is a rewrite of autoMLSA.pl. Generates automated multi-locus sequence analyses.
@@ -208,6 +215,9 @@ optional arguments:
                                   {validate,preblast,filtering,prealign,postalign,nexus,none}
 --install_deps <[INSTALL_DEPS]>   Install dependencies into given directory. [~/.local/external]
 --external EXTERNAL               Path to installed external programs. [~/.local/external]
+--mafft MAFFT                     mafft settings [--localpair --maxiterate 1000 --reorder]
+--iqtree IQTREE                   iqtree2 settings [-m MFP -B 1000 -alrt 1000 --msub
+                                  nuclear --merge rclusterf]
 --debug                           Turn on debugging messages.
 --version                         show program's version number and exit
 --quiet                           Turn off progress messages.
