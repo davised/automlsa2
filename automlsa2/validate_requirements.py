@@ -7,18 +7,19 @@ import logging
 import platform
 import urllib.request
 import shutil
+import re
+from packaging.version import parse as parse_version
 from pathlib import Path
 from hashlib import md5
 from typing import Dict
 from .helper_functions import end_program
+from ._exceptions import ProgramMismatchError
+from ._versions import BLASTVER, MAFFTVER, IQTREEVER
 from signal import signal, SIGPIPE, SIGINT, SIG_DFL
 
 signal(SIGPIPE, SIG_DFL)
 signal(SIGINT, SIG_DFL)
 
-BLASTVER = '2.10.1'
-MAFFTVER = '7.471'
-IQTREEVER = '2.1.1'
 EXTERNALDIR = os.path.join(os.path.expanduser('~'), '.local', 'external')
 
 
@@ -37,10 +38,39 @@ def get_external_path(external: str = '') -> str:
     return external
 
 
+def get_program_version(verstr: str, program_name: str) -> str:
+    # Refs from December 2020
+    # mafft: v7.471 (2020/Jul/3)
+    # tblastn: tblastn: 2.10.0+
+    #           Package: blast 2.10.0, build Mar 15 2020 22:36:43
+    # iqtree2: IQ-TREE multicore version 2.1.1 COVID-edition for Linux 64-bit built Aug 22 2020
+    #          Developed by Bui Quang Minh, James Barbetti, Nguyen Lam Tung,
+    #          Olga Chernomor, Heiko Schmidt, Dominik Schrempf, Michael Woodhams.
+    logger = logging.getLogger(__name__)
+
+    if program_name in ('tblastn', 'blastn', 'makeblastdb'):
+        ver_line = verstr.splitlines()[0]
+        ver = parse_version(ver_line.split()[1].rstrip('+'))
+        refver = parse_version(BLASTVER)
+    elif program_name == 'mafft':
+        ver_line = verstr
+        ver = parse_version(ver_line.split()[0])
+        refver = parse_version(MAFFTVER)
+    elif program_name == 'iqtree':
+        ver_line = verstr.splitlines()[0]
+        ver_search = re.search('version (.+?) ', ver_line)
+        ver = parse_version(ver_search.group(1))
+        refver = parse_version(IQTREEVER)
+    logger.debug(
+        'Program version found: {} -> {}; ref -> {}'.format(program_name, ver, refver)
+    )
+    return (ver, refver)
+
+
 def check_program(exe: str, program_name: str, version_flag: str) -> bool:
     logger = logging.getLogger(__name__)
     try:
-        ver: str = subprocess.run(
+        verstr: str = subprocess.run(
             [exe, version_flag],
             check=True,
             stdout=subprocess.PIPE,
@@ -59,8 +89,29 @@ def check_program(exe: str, program_name: str, version_flag: str) -> bool:
         logger.error(msg.format(program_name, exe))
         success = False
     else:
-        logger.debug('{} found: {}'.format(program_name, ver))
-        success = True
+        ver, refver = get_program_version(verstr, program_name)
+        if ver.major == refver.major:
+            if ver >= refver:
+                logger.debug('{} found: {}'.format(program_name, ver))
+                success = True
+            else:
+                raise ProgramMismatchError(
+                    '{} version {} needs to be updated to {} at minimum.'.format(
+                        program_name, ver, refver
+                    )
+                )
+        elif ver.major < refver.major:
+            raise ProgramMismatchError(
+                '{} version {} needs to be updated to {} at minimum.'.format(
+                    program_name, ver, refver
+                )
+            )
+        else:
+            msg = (
+                '{} version {} is newer than tested software. Proceed at your own risk.'
+            )
+            logger.warning(msg.format(program_name, ver))
+
     return success
 
 
@@ -116,33 +167,33 @@ def validate_requirements(external: str = '') -> Dict[str, str]:
 
     logger.debug('Checking tblastn: {}'.format(tblastn))
     if not check_program(tblastn, 'tblastn', '-version'):
-        msg = 'Please add tblastn to your $PATH or supply the path as ' '--external'
+        msg = 'Please add tblastn to your $PATH or supply the path as --external'
         logger.error(msg)
         end_program(78)
 
     logger.debug('Checking blastn: {}'.format(blastn))
     if not check_program(blastn, 'blastn', '-version'):
-        msg = 'Please add blastn to your $PATH or supply the path as ' '--external'
+        msg = 'Please add blastn to your $PATH or supply the path as --external'
         logger.error(msg)
         end_program(78)
 
     logger.debug('Checking makeblastdb: {}'.format(makeblastdb))
     if not check_program(makeblastdb, 'makeblastdb', '-version'):
-        msg = 'Please add makeblastdb to your $PATH or supply the path as ' '--external'
+        msg = 'Please add makeblastdb to your $PATH or supply the path as --external'
         logger.error(msg)
         end_program(78)
 
     # MAFFT testing
     logger.debug('Checking mafft: {}'.format(mafft))
     if not check_program(mafft, 'mafft', '--version'):
-        msg = 'Please add mafft to your $PATH or supply the path as ' '--external'
+        msg = 'Please add mafft to your $PATH or supply the path as --external'
         logger.error(msg)
         end_program(78)
 
     # iqtree testing
     logger.debug('Checking iqtree: {}'.format(iqtree))
     if not check_program(iqtree, 'iqtree', '--version'):
-        msg = 'Please add iqtree to your $PATH or supply the path as ' '--external'
+        msg = 'Please add iqtree to your $PATH or supply the path as --external'
         logger.error(msg)
         end_program(78)
 
