@@ -8,6 +8,7 @@ import argparse
 import pandas as pd  # type: ignore
 import shlex
 from typing import List, Dict, Any
+from rich.traceback import install
 from .parse_args import run_argparse
 from .validate_requirements import validate_requirements
 from .helper_functions import exit_successfully
@@ -24,6 +25,7 @@ from .phylogeny import generate_nexus, run_iqtree
 from signal import signal, SIGPIPE, SIGINT, SIG_DFL
 from .__version__ import __version__
 
+install()
 signal(SIGPIPE, SIG_DFL)
 signal(SIGINT, SIG_DFL)
 
