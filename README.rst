@@ -105,12 +105,13 @@ Python modules:
 2. numpy
 3. biopython
 4. rich
+5. packaging
 
 See ``requirements.txt`` for more info.
 
 External programs:
 
-1. `NCBI BLAST+ >= 2.10.1 <https://blast.ncbi.nlm.nih.gov>`_
+1. `NCBI BLAST+ >= 2.10.0 <https://blast.ncbi.nlm.nih.gov>`_
 2. `mafft >= 7.471 <https://mafft.cbrc.jp/alignment/software/>`_
 3. `IQ-TREE COVID-19 release >= 2.1.1 <http://www.iqtree.org>`_
 
@@ -264,9 +265,11 @@ renamed as required.
 TODO
 ----
 
-1. Write detailed list of intermediate files.
-2. Compare functionality of this version to prior autoMLSA.pl version.
-3. Check for version numbers for external programs.
+☐ Write detailed list of intermediate files.
+
+☐ Compare functionality of this version to prior autoMLSA.pl version.
+
+☑ Check for version numbers for external programs.
 
 Contributing
 ------------
