@@ -37,6 +37,9 @@ automlsa2
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :alt: Black format
     :target: https://github.com/psf/black
+.. image:: https://img.shields.io/badge/mypy-checked-blue
+    :alt: Checked with mypy
+    :target: http://mypy-lang.org/
 .. image:: https://img.shields.io/github/issues/davised/automlsa2
     :alt: GitHub issues
     :target: https://github.com/davised/automlsa2/issues
