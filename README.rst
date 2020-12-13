@@ -19,6 +19,9 @@ automlsa2
 .. image:: https://img.shields.io/badge/Made%20with-Python-1f425f.svg
     :alt: Made with python
     :target: https://python.org
+.. image:: https://img.shields.io/lgtm/grade/python/g/davised/automlsa2.svg?logo=lgtm&logoWidth=18
+    :alt: Language grade: Python
+    :target: https://lgtm.com/projects/g/davised/automlsa2/context:python
 .. image:: https://img.shields.io/github/last-commit/davised/automlsa2
     :alt: Latest commit
     :target: https://github.com/davised/automlsa2/commits
