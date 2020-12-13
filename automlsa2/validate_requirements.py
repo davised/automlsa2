@@ -8,10 +8,10 @@ import platform
 import urllib.request
 import shutil
 import re
-from packaging.version import parse as parse_version
+import packaging.version as pv
 from pathlib import Path
 from hashlib import md5
-from typing import Dict
+from typing import Dict, Tuple, Union, cast
 from .helper_functions import end_program
 from ._exceptions import ProgramMismatchError
 from ._versions import BLASTVER, MAFFTVER, IQTREEVER
@@ -38,7 +38,9 @@ def get_external_path(external: str = '') -> str:
     return external
 
 
-def get_program_version(verstr: str, program_name: str) -> str:
+def get_program_version(
+    verstr: str, program_name: str
+) -> Tuple[pv.Version, pv.Version]:
     # Refs from December 2020
     # mafft: v7.471 (2020/Jul/3)
     # tblastn: tblastn: 2.10.0+
@@ -47,24 +49,33 @@ def get_program_version(verstr: str, program_name: str) -> str:
     #          Developed by Bui Quang Minh, James Barbetti, Nguyen Lam Tung,
     #          Olga Chernomor, Heiko Schmidt, Dominik Schrempf, Michael Woodhams.
     logger = logging.getLogger(__name__)
+    ver: Union[pv.Version, pv.LegacyVersion]
+    refver: Union[pv.Version, pv.LegacyVersion]
 
     if program_name in ('tblastn', 'blastn', 'makeblastdb'):
         ver_line = verstr.splitlines()[0]
-        ver = parse_version(ver_line.split()[1].rstrip('+'))
-        refver = parse_version(BLASTVER)
+        ver = pv.parse(ver_line.split()[1].rstrip('+'))
+        refver = pv.parse(BLASTVER)
     elif program_name == 'mafft':
         ver_line = verstr
-        ver = parse_version(ver_line.split()[0])
-        refver = parse_version(MAFFTVER)
+        ver = pv.parse(ver_line.split()[0])
+        refver = pv.parse(MAFFTVER)
     elif program_name == 'iqtree':
         ver_line = verstr.splitlines()[0]
-        ver_search = re.search('version (.+?) ', ver_line)
-        ver = parse_version(ver_search.group(1))
-        refver = parse_version(IQTREEVER)
-    logger.debug(
-        'Program version found: {} -> {}; ref -> {}'.format(program_name, ver, refver)
-    )
-    return (ver, refver)
+        ver_search: str = re.search('version (.+?) ', ver_line).group(1)  # type: ignore
+        ver = pv.parse(ver_search)
+        refver = pv.parse(IQTREEVER)
+    if isinstance(ver, pv.Version):
+        logger.debug(
+            'Program version found: {} -> {}; ref -> {}'.format(
+                program_name, ver, refver
+            )
+        )
+        return (cast(pv.Version, ver), cast(pv.Version, refver))
+    else:
+        raise pv.InvalidVersion(
+            'Unable to determine accurate version for {}: {}'.format(program_name, ver)
+        )
 
 
 def check_program(exe: str, program_name: str, version_flag: str) -> bool:
