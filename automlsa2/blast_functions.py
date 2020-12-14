@@ -7,11 +7,10 @@ import pandas as pd  # type: ignore
 import json
 import os
 import logging
-import multiprocessing
 import shlex
 import csv
 import sys
-from multiprocessing import Pool
+import multiprocessing as mp
 from typing import List, Dict, Any, DefaultDict
 from .helper_functions import (
     json_writer,
@@ -109,7 +108,7 @@ def read_blast_results(
         # results = pd.DataFrame(columns=headers)
         blastrows: List[List[str]] = []
         nfiles = len(blastfiles)
-        p: multiprocessing.pool.Pool = Pool(threads)
+        p: mp.pool.Pool = mp.Pool(threads)
         with p:
             for dat in track(
                 p.imap_unordered(reader, blastfiles),
@@ -365,7 +364,7 @@ def generate_blast_list(
             msg = 'Running {} BLAST searches using {} CPUs.'
             ncmds: int = len(cmds)
             logger.info(msg.format(ncmds, threads))
-            p: multiprocessing.pool.Pool = Pool(threads)
+            p: mp.pool.Pool = mp.Pool(threads)
             with p:
                 for _ in track(
                     p.imap_unordered(subprocess.run, cmds),
