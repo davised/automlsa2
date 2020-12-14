@@ -8,10 +8,6 @@ import glob
 import logging
 from typing import List
 from hashlib import blake2b
-from signal import signal, SIGPIPE, SIGINT, SIG_DFL
-
-signal(SIGPIPE, SIG_DFL)
-signal(SIGINT, SIG_DFL)
 
 SUFFIXES = ['.nsq', '.nin', '.nhr', '.nto', '.not', '.ndb', '.ntf']
 

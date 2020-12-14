@@ -22,10 +22,6 @@ from .helper_functions import (
 )
 from collections import defaultdict
 from rich.progress import track
-from signal import signal, SIGPIPE, SIGINT, SIG_DFL
-
-signal(SIGPIPE, SIG_DFL)
-signal(SIGINT, SIG_DFL)
 
 SINGLE_COPY_ESTIMATE = 0.90
 PERCENT_CUTOFF = 50.0

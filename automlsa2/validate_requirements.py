@@ -15,10 +15,6 @@ from typing import Dict, Tuple, Union, cast
 from .helper_functions import end_program
 from ._exceptions import ProgramMismatchError
 from ._versions import BLASTVER, MAFFTVER, IQTREEVER
-from signal import signal, SIGPIPE, SIGINT, SIG_DFL
-
-signal(SIGPIPE, SIG_DFL)
-signal(SIGINT, SIG_DFL)
 
 EXTERNALDIR = os.path.join(os.path.expanduser('~'), '.local', 'external')
 
