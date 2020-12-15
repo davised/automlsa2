@@ -7,7 +7,7 @@ import shutil
 import glob
 import logging
 import signal
-import psutil
+import psutil  # type: ignore
 from typing import List
 from hashlib import blake2b
 
@@ -25,7 +25,6 @@ def worker_init(parent_id):
     def sig_int(signal_num, frame):
         parent = psutil.Process(parent_id)
         pid = os.getpid()
-        print('\033[?25h')
         for child in parent.children():
             if child.pid != pid:
                 if child.is_running():
