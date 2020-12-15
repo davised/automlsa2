@@ -4,9 +4,7 @@ import logging
 import os
 import json
 import glob
-
-# from tqdm import tqdm  # type: ignore
-from rich.progress import track
+from .pbar import track_wide
 from .helper_functions import (
     generate_hash,
     json_writer,
@@ -48,7 +46,7 @@ def convert_fasta(
     if not os.path.exists(fastadir):
         os.mkdir(fastadir)
 
-    for fasta in track(fastas, 'Working...'.rjust(19, ' ')):
+    for fasta in track_wide(fastas, 'Working...'):
         base = os.path.basename(fasta)
         label = labels.index(base)
         labelfastaf = os.path.join(fastadir, base)
@@ -74,7 +72,7 @@ def convert_fasta(
             seqhash = generate_hash(seq)
             rename_info[base]['hash'] = seqhash
     logger.info('Generating and/or validating BLAST DBs.')
-    for labelfastaf in track(new_fastas, 'makeblastdb...'.rjust(19, ' ')):
+    for labelfastaf in track_wide(new_fastas, 'makeblastdb...'):
         make_blast_database(makeblastdb, labelfastaf)
     json_writer(renamef, rename_info)
 

@@ -22,9 +22,7 @@ from .helper_functions import (
     worker_init,
 )
 from collections import defaultdict
-from rich.progress import track
-
-# from .pbar import track_wide
+from .pbar import track_wide
 
 SINGLE_COPY_ESTIMATE = 0.90
 PERCENT_CUTOFF = 50.0
@@ -115,9 +113,9 @@ def generate_blast_list(
             logger.info(msg.format(ncmds, threads))
             p: mp.pool.Pool = mp.Pool(threads, worker_init(os.getpid()))
             with p:
-                for _ in track(
+                for _ in track_wide(
                     p.imap_unordered(subprocess.run, cmds),
-                    'Blast Search...'.rjust(19, ' '),
+                    'Blast Search...',
                     ncmds,
                 ):
                     pass
@@ -175,9 +173,9 @@ def read_blast_results(
         nfiles = len(blastfiles)
         p: mp.pool.Pool = mp.Pool(threads, worker_init(os.getpid()))
         with p:
-            for dat in track(
+            for dat in track_wide(
                 p.imap_unordered(reader, blastfiles),
-                'Reading Blast...'.rjust(19, ' '),
+                'Reading Blast...',
                 nfiles,
             ):
                 for row in dat:
@@ -355,9 +353,7 @@ def print_fasta_files(blastout: pd.DataFrame, labels: List[str]) -> List[str]:
         os.mkdir(fastdir)
     msg = 'Writing unaligned FASTA sequences, if necessary.'
     logger.info(msg)
-    for name, group in track(
-        blastout.groupby('qseqid'), 'Writing FASTA...'.rjust(19, ' ')
-    ):
+    for name, group in track_wide(blastout.groupby('qseqid'), 'Writing FASTA...'):
         fasta: str = os.path.join(fastdir, '{}.fas'.format(name))
         unaligned.append(fasta)
         if os.path.exists(fasta):

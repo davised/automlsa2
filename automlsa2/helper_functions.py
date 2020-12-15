@@ -25,13 +25,15 @@ def worker_init(parent_id):
     def sig_int(signal_num, frame):
         parent = psutil.Process(parent_id)
         pid = os.getpid()
+        print('\033[?25h')
         for child in parent.children():
             if child.pid != pid:
                 if child.is_running():
                     logger.debug(f'killing child: {child.pid}')
                     child.kill()
         logger.debug(f'killing parent: {parent_id}')
-        parent.kill()
+        if parent.is_running():
+            parent.kill()
         # logger.debug(f'suicide: {os.getpid()}')
         end_program(2)
         # psutil.Process(os.getpid()).kill()
