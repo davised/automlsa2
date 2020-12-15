@@ -10,7 +10,7 @@ import logging
 import shlex
 import csv
 import sys
-import multiprocessing as mp
+import concurrent.futures as cf
 from typing import List, Dict, Any, DefaultDict
 from .helper_functions import (
     json_writer,
@@ -111,10 +111,12 @@ def generate_blast_list(
             msg = 'Running {} BLAST searches using {} CPUs.'
             ncmds: int = len(cmds)
             logger.info(msg.format(ncmds, threads))
-            p: mp.pool.Pool = mp.Pool(threads, worker_init(os.getpid()))
+            p: cf.ProcessPoolExecutor = cf.ProcessPoolExecutor(
+                threads, worker_init(os.getpid())
+            )
             with p:
                 for _ in track_wide(
-                    p.imap_unordered(subprocess.run, cmds),
+                    p.map(subprocess.run, cmds),
                     'Blast Search...',
                     ncmds,
                 ):
@@ -171,10 +173,12 @@ def read_blast_results(
         # results = pd.DataFrame(columns=headers)
         blastrows: List[List[str]] = []
         nfiles = len(blastfiles)
-        p: mp.pool.Pool = mp.Pool(threads, worker_init(os.getpid()))
+        p: cf.ProcessPoolExecutor = cf.ProcessPoolExecutor(
+            threads, worker_init(os.getpid())
+        )
         with p:
             for dat in track_wide(
-                p.imap_unordered(reader, blastfiles),
+                p.map(reader, blastfiles),
                 'Reading Blast...',
                 nfiles,
             ):
