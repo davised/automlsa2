@@ -11,7 +11,7 @@ from typing import List, Dict, Any
 from rich.traceback import install
 from .parse_args import run_argparse
 from .validate_requirements import validate_requirements
-from .helper_functions import exit_successfully
+from .helper_functions import exit_successfully, siginthandler
 from .blast_functions import (
     read_blast_results,
     print_blast_summary,
@@ -27,7 +27,7 @@ from .__version__ import __version__
 
 install()
 signal(SIGPIPE, SIG_DFL)
-signal(SIGINT, SIG_DFL)
+signal(SIGINT, siginthandler)
 
 
 def main() -> None:

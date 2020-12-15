@@ -6,10 +6,37 @@ import json
 import shutil
 import glob
 import logging
+import signal
+import psutil
 from typing import List
 from hashlib import blake2b
 
 SUFFIXES = ['.nsq', '.nin', '.nhr', '.nto', '.not', '.ndb', '.ntf']
+
+
+def siginthandler(sig, frame):
+    print('\033[?25h')
+    end_program(2)
+
+
+def worker_init(parent_id):
+    logger = logging.getLogger(__name__)
+
+    def sig_int(signal_num, frame):
+        parent = psutil.Process(parent_id)
+        pid = os.getpid()
+        for child in parent.children():
+            if child.pid != pid:
+                if child.is_running():
+                    logger.debug(f'killing child: {child.pid}')
+                    child.kill()
+        logger.debug(f'killing parent: {parent_id}')
+        parent.kill()
+        # logger.debug(f'suicide: {os.getpid()}')
+        end_program(2)
+        # psutil.Process(os.getpid()).kill()
+
+    signal.signal(signal.SIGINT, sig_int)
 
 
 def remove_intermediates(runid: str, intermediates: List[str], protect: bool) -> None:
@@ -55,6 +82,12 @@ def end_program(code: int) -> None:
         logger.info(msg)
     elif code == 0:
         msg = 'Program was a success! Congratulations!'
+        logger.info(msg)
+    elif code == 2:
+        print('\033[?25h')
+        msg = 'Program was interrupted using the keyboard.'
+        logger.info(msg)
+        msg = 'Partial files may exist. Re-running the analysis is suggested.'
         logger.info(msg)
     else:
         msg = 'Program exiting with code ({}) indicating failure.'

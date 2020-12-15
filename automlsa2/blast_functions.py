@@ -19,9 +19,12 @@ from .helper_functions import (
     remove_intermediates,
     end_program,
     SUFFIXES,
+    worker_init,
 )
 from collections import defaultdict
 from rich.progress import track
+
+# from .pbar import track_wide
 
 SINGLE_COPY_ESTIMATE = 0.90
 PERCENT_CUTOFF = 50.0
@@ -57,6 +60,72 @@ def reader(fn: str) -> List[List[str]]:
         for row in tsvreader:
             dat.append(row)
     return dat
+
+
+def generate_blast_list(
+    rundir: str,
+    exe: str,
+    queries: List[str],
+    targets: List[str],
+    evalue: float,
+    threads: int,
+    checkpoint: bool,
+) -> List[str]:
+    """
+    Generates list of BLAST searches that need to be run
+
+    input  - blast type, exes, queries, and targets
+    output - list of blast output names
+    """
+    logger = logging.getLogger(__name__)
+    cmds: List[List[str]] = []
+    # blastout = defaultdict(list)
+    blastout: List[str] = []
+    blastdir: str = os.path.join(rundir, 'blast')
+    outfmt: str = (
+        '7 qseqid sseqid saccver pident qlen length bitscore ' 'qcovhsp stitle sseq'
+    )
+    base_cmd: List[str] = [exe, '-evalue', str(evalue), '-outfmt', outfmt]
+    cmd: List[str] = []
+    if not os.path.exists(blastdir):
+        os.mkdir(blastdir)
+    for target in targets:
+        target_base: str = os.path.basename(target)
+        for query in queries:
+            query_base: str = os.path.splitext(os.path.basename(query))[0]
+            outname: str = '{}_vs_{}.tab'.format(query_base, target_base)
+            outpath: str = os.path.join(blastdir, outname)
+            blastout.append(os.path.join(outpath))
+            cmd = base_cmd + ['-db', target, '-query', query, '-out', outpath]
+            if not os.path.exists(outpath) or os.path.getsize(outpath) == 0:
+                cmds.append(cmd)
+
+    if cmds:
+        if checkpoint:
+            blastfile: str = os.path.join(rundir, 'blastcmds.txt')
+            with open(blastfile, 'w') as fh:
+                for cmd in cmds:
+                    fh.write(' '.join([shlex.quote(x) for x in cmd]) + '\n')
+            msg = 'BLAST commands written to {}. Exiting.'
+            logger.info(msg.format(blastfile))
+            checkpoint_reached('prior to BLAST searches')
+        else:
+            msg = 'Running {} BLAST searches using {} CPUs.'
+            ncmds: int = len(cmds)
+            logger.info(msg.format(ncmds, threads))
+            p: mp.pool.Pool = mp.Pool(threads, worker_init(os.getpid()))
+            with p:
+                for _ in track(
+                    p.imap_unordered(subprocess.run, cmds),
+                    'Blast Search...'.rjust(19, ' '),
+                    ncmds,
+                ):
+                    pass
+    else:
+        logger.info('No BLAST searches remaining. Moving to parse.')
+
+    open(os.path.join('.autoMLSA', 'checkpoint', 'generate_blast_list'), 'w').close()
+    return blastout
 
 
 def read_blast_results(
@@ -104,7 +173,7 @@ def read_blast_results(
         # results = pd.DataFrame(columns=headers)
         blastrows: List[List[str]] = []
         nfiles = len(blastfiles)
-        p: mp.pool.Pool = mp.Pool(threads)
+        p: mp.pool.Pool = mp.Pool(threads, worker_init(os.getpid()))
         with p:
             for dat in track(
                 p.imap_unordered(reader, blastfiles),
@@ -307,69 +376,3 @@ def print_fasta_files(blastout: pd.DataFrame, labels: List[str]) -> List[str]:
     checkpoint_tracker('print_fasta_files')
 
     return unaligned
-
-
-def generate_blast_list(
-    rundir: str,
-    exe: str,
-    queries: List[str],
-    targets: List[str],
-    evalue: float,
-    threads: int,
-    checkpoint: bool,
-) -> List[str]:
-    """
-    Generates list of BLAST searches that need to be run
-
-    input  - blast type, exes, queries, and targets
-    output - list of blast output names
-    """
-    logger = logging.getLogger(__name__)
-    cmds: List[List[str]] = []
-    # blastout = defaultdict(list)
-    blastout: List[str] = []
-    blastdir: str = os.path.join(rundir, 'blast')
-    outfmt: str = (
-        '7 qseqid sseqid saccver pident qlen length bitscore ' 'qcovhsp stitle sseq'
-    )
-    base_cmd: List[str] = [exe, '-evalue', str(evalue), '-outfmt', outfmt]
-    cmd: List[str] = []
-    if not os.path.exists(blastdir):
-        os.mkdir(blastdir)
-    for target in targets:
-        target_base: str = os.path.basename(target)
-        for query in queries:
-            query_base: str = os.path.splitext(os.path.basename(query))[0]
-            outname: str = '{}_vs_{}.tab'.format(query_base, target_base)
-            outpath: str = os.path.join(blastdir, outname)
-            blastout.append(os.path.join(outpath))
-            cmd = base_cmd + ['-db', target, '-query', query, '-out', outpath]
-            if not os.path.exists(outpath) or os.path.getsize(outpath) == 0:
-                cmds.append(cmd)
-
-    if cmds:
-        if checkpoint:
-            blastfile: str = os.path.join(rundir, 'blastcmds.txt')
-            with open(blastfile, 'w') as fh:
-                for cmd in cmds:
-                    fh.write(' '.join([shlex.quote(x) for x in cmd]) + '\n')
-            msg = 'BLAST commands written to {}. Exiting.'
-            logger.info(msg.format(blastfile))
-            checkpoint_reached('prior to BLAST searches')
-        else:
-            msg = 'Running {} BLAST searches using {} CPUs.'
-            ncmds: int = len(cmds)
-            logger.info(msg.format(ncmds, threads))
-            p: mp.pool.Pool = mp.Pool(threads)
-            with p:
-                for _ in track(
-                    p.imap_unordered(subprocess.run, cmds),
-                    'Blast Search...'.rjust(19, ' '),
-                    ncmds,
-                ):
-                    pass
-    else:
-        logger.info('No BLAST searches remaining. Moving to parse.')
-
-    open(os.path.join('.autoMLSA', 'checkpoint', 'generate_blast_list'), 'w').close()
-    return blastout
