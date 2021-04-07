@@ -11,6 +11,7 @@ import shlex
 import csv
 import sys
 import concurrent.futures as cf
+from rich.progress import track
 from typing import List, Dict, Any, DefaultDict
 from .helper_functions import (
     json_writer,
@@ -22,7 +23,8 @@ from .helper_functions import (
     worker_init,
 )
 from collections import defaultdict
-from .pbar import track_wide
+
+# from .pbar import track_wide
 
 SINGLE_COPY_ESTIMATE = 0.90
 PERCENT_CUTOFF = 50.0
@@ -115,7 +117,7 @@ def generate_blast_list(
                 threads, worker_init(os.getpid())
             )
             with p:
-                for _ in track_wide(
+                for _ in track(
                     p.map(subprocess.run, cmds),
                     'Blast Search...',
                     ncmds,
@@ -177,7 +179,7 @@ def read_blast_results(
             threads, worker_init(os.getpid())
         )
         with p:
-            for dat in track_wide(
+            for dat in track(
                 p.map(reader, blastfiles),
                 'Reading Blast...',
                 nfiles,
@@ -357,7 +359,7 @@ def print_fasta_files(blastout: pd.DataFrame, labels: List[str]) -> List[str]:
         os.mkdir(fastdir)
     msg = 'Writing unaligned FASTA sequences, if necessary.'
     logger.info(msg)
-    for name, group in track_wide(blastout.groupby('qseqid'), 'Writing FASTA...'):
+    for name, group in track(blastout.groupby('qseqid'), 'Writing FASTA...'):
         fasta: str = os.path.join(fastdir, '{}.fas'.format(name))
         unaligned.append(fasta)
         if os.path.exists(fasta):

@@ -5,7 +5,9 @@ import logging
 import shlex
 import subprocess
 from .helper_functions import checkpoint_reached, checkpoint_tracker
-from .pbar import track_wide
+from rich.progress import track
+
+# from .pbar import track_wide
 from typing import List
 
 
@@ -29,7 +31,7 @@ def run_mafft(
     logger.info('Aligning FASTA sequences, if necessary.')
     if not os.path.exists(aligneddir):
         os.mkdir(aligneddir)
-    for unalign in track_wide(unaligned, 'Running mafft...'):
+    for unalign in track(unaligned, 'Running mafft...'):
         outname: str = '{}/{}.aln'.format(
             aligneddir, os.path.basename(os.path.splitext(unalign)[0])
         )
