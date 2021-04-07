@@ -1,0 +1,3 @@
+[submodule "automlsa2-examples"]
+	path = automlsa2-examples
+	url = https://github.com/davised/automlsa2-examples
