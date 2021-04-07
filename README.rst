@@ -268,6 +268,19 @@ Genomes can be downloaded using my ``get_assemblies`` program, here:
 https://pypi.org/project/get-assemblies/. Locally produced genomes can be
 renamed as required.
 
+Running Tests
+-------------
+
+The test data are included in a separate repository -
+https://github.com/davised/automlsa2-examples
+
+To download this test data, you can run ``git submodule update --init``.
+
+Alternatively, you can run the ``run_tests.sh`` script and it will download
+the git submodule for you and run the test command.
+
+The tests should take about 2-3 minutes with 4 CPUs.
+
 TODO
 ----
 
