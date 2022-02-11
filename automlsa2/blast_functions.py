@@ -83,7 +83,7 @@ def generate_blast_list(
     blastout: List[str] = []
     blastdir: str = os.path.join(rundir, 'blast')
     outfmt: str = (
-        '7 qseqid sseqid saccver pident qlen length bitscore ' 'qcovhsp stitle sseq'
+        '7 qseqid sseqid saccver pident qlen length bitscore qcovhsp stitle sseq'
     )
     base_cmd: List[str] = [exe, '-evalue', str(evalue), '-outfmt', outfmt]
     cmd: List[str] = []
