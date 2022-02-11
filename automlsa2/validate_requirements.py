@@ -14,7 +14,14 @@ from hashlib import md5
 from typing import Dict, Tuple, Union, cast
 from .helper_functions import end_program
 from ._exceptions import ProgramMismatchError
-from ._versions import BLASTVER, MAFFTVER, IQTREEVER
+from ._versions import (
+    BLASTVERMIN,
+    MAFFTVERMIN,
+    IQTREEVERMIN,
+    BLASTVERCURR,
+    MAFFTVERCURR,
+    IQTREEVERCURR,
+)
 
 EXTERNALDIR = os.path.join(os.path.expanduser('~'), '.local', 'external')
 
@@ -51,16 +58,16 @@ def get_program_version(
     if program_name in ('tblastn', 'blastn', 'makeblastdb'):
         ver_line = verstr.splitlines()[0]
         ver = pv.parse(ver_line.split()[1].rstrip('+'))
-        refver = pv.parse(BLASTVER)
+        refver = pv.parse(BLASTVERMIN)
     elif program_name == 'mafft':
         ver_line = verstr
         ver = pv.parse(ver_line.split()[0])
-        refver = pv.parse(MAFFTVER)
+        refver = pv.parse(MAFFTVERMIN)
     elif program_name == 'iqtree':
         ver_line = verstr.splitlines()[0]
         ver_search: str = re.search('version (.+?) ', ver_line).group(1)  # type: ignore
         ver = pv.parse(ver_search)
-        refver = pv.parse(IQTREEVER)
+        refver = pv.parse(IQTREEVERMIN)
     if isinstance(ver, pv.Version):
         logger.debug(
             'Program version found: {} -> {}; ref -> {}'.format(
@@ -134,20 +141,26 @@ def validate_requirements(external: str = '') -> Dict[str, str]:
     # Set local path to blast executable DIR
     BLASTPATH: str = ''
     externalpath = get_external_path(external)
-    blastcheck = os.path.join(externalpath, 'ncbi-blast-{}+'.format(BLASTVER), 'bin')
+    blastcheck = os.path.join(
+        externalpath, 'ncbi-blast-{}+'.format(BLASTVERCURR), 'bin'
+    )
     if os.path.exists(blastcheck):
         logger.debug('BLAST found in external dir.')
         BLASTPATH = blastcheck
 
     if platform.system() == 'Linux':
         mafftsuffix = 'linux64'
-        iqtreesuffix = os.path.join('{}-Linux'.format(IQTREEVER), 'bin')
+        iqtreesuffix = os.path.join('{}-Linux'.format(IQTREEVERCURR), 'bin')
     elif platform.system() == 'Darwin':
         mafftsuffix = 'mac'
-        iqtreesuffix = os.path.join('{}-MacOSX'.format(IQTREEVER), 'bin')
+        iqtreesuffix = os.path.join('{}-MacOSX'.format(IQTREEVERCURR), 'bin')
     elif platform.system() == 'Windows':
         mafftsuffix = ''
-        iqtreesuffix = os.path.join('{}-Windows'.format(IQTREEVER), 'bin')
+        iqtreesuffix = os.path.join('{}-Windows'.format(IQTREEVERCURR), 'bin')
+    else:
+        logger.warning('Unable to determine os version.')
+        mafftsuffix = ''
+        iqtreesuffix = ''
 
     mafftcheck = os.path.join(externalpath, 'mafft-{}'.format(mafftsuffix))
     iqtreecheck = os.path.join(externalpath, 'iqtree-{}'.format(iqtreesuffix))
@@ -233,18 +246,20 @@ def install_blast(external: str = '') -> None:
     logger = logging.getLogger(__name__)
     externalpath = get_external_path(external)
     base_url = 'https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/{}'.format(
-        BLASTVER
+        BLASTVERCURR
     )
-    base_file = 'ncbi-blast-{}+-x64-'.format(BLASTVER)
-    if platform.system() == 'Linux':
-        base_out_file = base_file + 'linux.tar.gz'
-    elif platform.system() == 'Darwin':
+    base_file = 'ncbi-blast-{}+-x64-'.format(BLASTVERCURR)
+
+    # Assume Linux, update if necessary
+    base_out_file = base_file + 'linux.tar.gz'
+    if platform.system() == 'Darwin':
         base_out_file = base_file + 'macosx.tar.gz'
     elif platform.system() == 'Windows':
         base_out_file = base_file + 'win64.tar.gz'
+
     out_file = os.path.join(externalpath, base_out_file)
     blast_tar_url = '/'.join([base_url, base_out_file])
-    md5_url = '/'.join([base_url, base_out_file + '.md5'])
+    md5_url = '/'.join([base_url, f'{base_out_file}.md5'])
     download_file(out_file, blast_tar_url, 'BLAST')
 
     blast_md5_digest = md5(Path(out_file).read_bytes()).hexdigest()
@@ -259,7 +274,7 @@ def install_blast(external: str = '') -> None:
         logger.info('BLAST download was unsuccessful. Delete file and try again.')
         end_program(-1)
     tblastn = os.path.join(
-        externalpath, 'ncbi-blast-{}+'.format(BLASTVER), 'bin', 'tblastn'
+        externalpath, 'ncbi-blast-{}+'.format(BLASTVERCURR), 'bin', 'tblastn'
     )
     if not os.path.exists(tblastn):
         logger.info('Unpacking BLAST tar.gz file.')
@@ -288,13 +303,13 @@ def install_mafft(external: str = '') -> None:
     logger = logging.getLogger(__name__)
 
     base_url = 'https://mafft.cbrc.jp/alignment/software'
-    base_file = 'mafft-{}'.format(MAFFTVER)
+    base_file = 'mafft-{}'.format(MAFFTVERCURR)
     if platform.system() == 'Linux':
         base_out_file = base_file + '-linux.tgz'
-        md5_hash = '641cf15f90fc6634f9b2b2c7cf67e27d'
+        md5_hash = '01ff001442faefdd5d1065973976ea3e'
     elif platform.system() == 'Darwin':
         base_out_file = base_file + '-mac.zip'
-        md5_hash = 'f57cd93ea546e47fbad975aecb58d303'
+        md5_hash = '8206c78533286a4cd6a38821902fbb7a'
     elif platform.system() == 'Windows':
         logger.error('Windows is not currently supported for MAFFT install.')
         logger.error(
@@ -352,18 +367,18 @@ def install_iqtree(external: str = '') -> None:
     logger = logging.getLogger(__name__)
 
     base_url = 'https://github.com/iqtree/iqtree2/releases/download/v{}'.format(
-        IQTREEVER
+        IQTREEVERCURR
     )
-    base_file = 'iqtree-{}'.format(IQTREEVER)
+    base_file = 'iqtree-{}'.format(IQTREEVERCURR)
     if platform.system() == 'Linux':
         base_out_file = base_file + '-Linux.tar.gz'
-        md5_hash = '2e2dfeeb2a1e9e123f542b200f18340d'
+        md5_hash = 'fcb2d06c547e597a70c27aff06e63e38'
     elif platform.system() == 'Darwin':
         base_out_file = base_file + '-MacOSX.zip'
-        md5_hash = '45314fba262f200c32c37deceefbf5b1'
+        md5_hash = '889709744247f079e5e79ad8885f78d0'
     elif platform.system() == 'Windows':
         base_out_file = base_file + '-Windows.zip'
-        md5_hash = 'f1a25e89a5c31437125ae0c666d29ee8'
+        md5_hash = '99af9d49bbf4b90bb6a1739a305f5fac'
 
     externalpath = get_external_path(external)
     out_file = os.path.join(externalpath, base_out_file)
@@ -378,14 +393,14 @@ def install_iqtree(external: str = '') -> None:
         exit(-1)
     if platform.system() == 'Linux':
         iqtree = os.path.join(
-            externalpath, 'iqtree-{}-Linux'.format(IQTREEVER), 'bin', 'iqtree2'
+            externalpath, 'iqtree-{}-Linux'.format(IQTREEVERCURR), 'bin', 'iqtree2'
         )
         if not os.path.exists(iqtree):
             logger.info('Unpacking iqtree tar.gz file.')
             shutil.unpack_archive(out_file, externalpath, 'gztar')
     elif platform.system() == 'Darwin':
         iqtree = os.path.join(
-            externalpath, 'iqtree-{}-MacOSX'.format(IQTREEVER), 'bin', 'iqtree2'
+            externalpath, 'iqtree-{}-MacOSX'.format(IQTREEVERCURR), 'bin', 'iqtree2'
         )
         if not os.path.exists(iqtree):
             logger.info('Unpacking iqtree zip file.')
@@ -393,7 +408,10 @@ def install_iqtree(external: str = '') -> None:
         os.chmod(iqtree, 0o755)
     elif platform.system() == 'Windows':
         iqtree = os.path.join(
-            externalpath, 'iqtree-{}-Windows'.format(IQTREEVER), 'bin', 'iqtree2.exe'
+            externalpath,
+            'iqtree-{}-Windows'.format(IQTREEVERCURR),
+            'bin',
+            'iqtree2.exe',
         )
         if not os.path.exists(iqtree):
             logger.info('Unpacking iqtree zip file.')
