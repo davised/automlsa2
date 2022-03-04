@@ -112,6 +112,7 @@ Python modules:
 3. biopython
 4. rich
 5. packaging
+6. psutil
 
 See ``requirements.txt`` for more info.
 

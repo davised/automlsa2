@@ -3,3 +3,4 @@ numpy >= 1.19.2
 packaging >= 20.0
 pandas >= 1.1.2
 rich >= 9.1.0
+psutil >= 5.9.0
