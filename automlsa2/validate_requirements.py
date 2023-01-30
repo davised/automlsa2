@@ -21,6 +21,8 @@ from ._versions import (
     BLASTVERCURR,
     MAFFTVERCURR,
     IQTREEVERCURR,
+    MAFFTMD5,
+    IQTREEMD5,
 )
 
 EXTERNALDIR = os.path.join(os.path.expanduser('~'), '.local', 'external')
@@ -306,10 +308,10 @@ def install_mafft(external: str = '') -> None:
     base_file = 'mafft-{}'.format(MAFFTVERCURR)
     if platform.system() == 'Linux':
         base_out_file = base_file + '-linux.tgz'
-        md5_hash = '01ff001442faefdd5d1065973976ea3e'
+        md5_hash = MAFFTMD5['linux']
     elif platform.system() == 'Darwin':
         base_out_file = base_file + '-mac.zip'
-        md5_hash = '8206c78533286a4cd6a38821902fbb7a'
+        md5_hash = MAFFTMD5['mac']
     elif platform.system() == 'Windows':
         logger.error('Windows is not currently supported for MAFFT install.')
         logger.error(
@@ -372,13 +374,13 @@ def install_iqtree(external: str = '') -> None:
     base_file = 'iqtree-{}'.format(IQTREEVERCURR)
     if platform.system() == 'Linux':
         base_out_file = base_file + '-Linux.tar.gz'
-        md5_hash = 'fcb2d06c547e597a70c27aff06e63e38'
+        md5_hash = IQTREEMD5['linux']
     elif platform.system() == 'Darwin':
         base_out_file = base_file + '-MacOSX.zip'
-        md5_hash = '889709744247f079e5e79ad8885f78d0'
+        md5_hash = IQTREEMD5['mac']
     elif platform.system() == 'Windows':
         base_out_file = base_file + '-Windows.zip'
-        md5_hash = '99af9d49bbf4b90bb6a1739a305f5fac'
+        md5_hash = IQTREEMD5['win']
 
     externalpath = get_external_path(external)
     out_file = os.path.join(externalpath, base_out_file)
