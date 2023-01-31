@@ -10,7 +10,7 @@ MAFFTMD5 =  {'linux': '7d9131d8813efe6e2d0ae51eec7dec96',
              'mac'  : 'f007dcf322fa7b1549582a748036efde',
              'win'  : '',
             }
-IQTREEMD5 = {'linux': 'fcb2d06c547e597a70c27aff06e63e38',
-             'mac'  : '889709744247f079e5e79ad8885f78d0',
-             'win'  : '99af9d49bbf4b90bb6a1739a305f5fac',
+IQTREEMD5 = {'linux': 'd92857faa97da09f7ce22e111323e1c1',
+             'mac'  : 'e680e10b14240ea9f7d82b5f3a89602b',
+             'win'  : '52562125b1f78d434463c64ce078e1f3',
             }
