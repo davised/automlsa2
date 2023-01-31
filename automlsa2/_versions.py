@@ -5,7 +5,7 @@ MAFFTVERMIN = '7.487'
 IQTREEVERMIN = '2.1.1'
 BLASTVERCURR = '2.13.0'
 MAFFTVERCURR = '7.511'
-IQTREEVERCURR = '2.1.3'
+IQTREEVERCURR = '2.2.2.2'
 MAFFTMD5 =  {'linux': '7d9131d8813efe6e2d0ae51eec7dec96',
              'mac'  : 'f007dcf322fa7b1549582a748036efde',
              'win'  : '',
