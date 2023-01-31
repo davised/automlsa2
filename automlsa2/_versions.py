@@ -6,8 +6,8 @@ IQTREEVERMIN = '2.1.1'
 BLASTVERCURR = '2.13.0'
 MAFFTVERCURR = '7.511'
 IQTREEVERCURR = '2.1.3'
-MAFFTMD5 =  {'linux': '01ff001442faefdd5d1065973976ea3e',
-             'mac'  : '8206c78533286a4cd6a38821902fbb7a',
+MAFFTMD5 =  {'linux': '7d9131d8813efe6e2d0ae51eec7dec96',
+             'mac'  : 'f007dcf322fa7b1549582a748036efde',
              'win'  : '',
             }
 IQTREEMD5 = {'linux': 'fcb2d06c547e597a70c27aff06e63e38',
