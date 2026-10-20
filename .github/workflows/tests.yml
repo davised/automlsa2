@@ -27,3 +27,19 @@ jobs:
         run: python -m pip install '.[test]'
       - name: Run tests
         run: python -m pytest
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Install
+        run: python -m pip install . 'black==26.5.1' 'mypy==2.4.0'
+      - name: black
+        run: black --check automlsa2 tests
+      - name: mypy
+        run: mypy automlsa2

@@ -226,7 +226,9 @@ def validate_arguments(
                 changed = True
 
     if blast_changed:
-        logger.info('BLAST settings changed from config; BLAST searches will be redone.')
+        logger.info(
+            'BLAST settings changed from config; BLAST searches will be redone.'
+        )
         remove_intermediates(args.runid, ['blast', 'genome'], args.protect)
     elif changed:
         logger.debug('One or more settings was changed from config.')
