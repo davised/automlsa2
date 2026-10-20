@@ -144,7 +144,7 @@ def generate_blast_list(
             ncmds: int = len(cmds)
             logger.info(msg.format(ncmds, threads))
             p: cf.ProcessPoolExecutor = cf.ProcessPoolExecutor(
-                threads, worker_init(os.getpid())
+                threads, initializer=worker_init
             )
             failed: List[Tuple[str, int, str]] = []
             with p:
@@ -214,7 +214,7 @@ def read_blast_results(
         blastrows: List[List[str]] = []
         nfiles = len(blastfiles)
         p: cf.ProcessPoolExecutor = cf.ProcessPoolExecutor(
-            threads, worker_init(os.getpid())
+            threads, initializer=worker_init
         )
         with p:
             for dat in track(

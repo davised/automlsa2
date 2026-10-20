@@ -15,30 +15,54 @@ from hashlib import blake2b
 SUFFIXES = ['.nsq', '.nin', '.nhr', '.nto', '.not', '.ndb', '.ntf', '.njs']
 
 
+# Forked worker processes inherit this value, so they can tell they are not
+# the main process.
+MAIN_PID = os.getpid()
+
+
+def kill_child_processes() -> None:
+    """
+    Terminates all descendant processes, e.g. BLAST workers and their BLAST
+    searches, mafft, or iqtree.
+    """
+    try:
+        children = psutil.Process().children(recursive=True)
+    except psutil.Error:
+        return
+    for child in children:
+        try:
+            child.terminate()
+        except psutil.NoSuchProcess:
+            pass
+    _, alive = psutil.wait_procs(children, timeout=5)
+    for child in alive:
+        try:
+            child.kill()
+        except psutil.NoSuchProcess:
+            pass
+
+
 def siginthandler(sig, frame):
-    print('\033[?25h')
+    if os.getpid() != MAIN_PID:
+        return
+    # Ignore repeated Ctrl-C while cleaning up
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    kill_child_processes()
     end_program(2)
 
 
-def worker_init(parent_id):
-    logger = logging.getLogger(__name__)
+def _ignore_sigint(signal_num, frame):
+    pass
 
-    def sig_int(signal_num, frame):
-        parent = psutil.Process(parent_id)
-        pid = os.getpid()
-        for child in parent.children():
-            if child.pid != pid:
-                if child.is_running():
-                    logger.debug(f'killing child: {child.pid}')
-                    child.kill()
-        logger.debug(f'killing parent: {parent_id}')
-        if parent.is_running():
-            parent.kill()
-        # logger.debug(f'suicide: {os.getpid()}')
-        end_program(2)
-        # psutil.Process(os.getpid()).kill()
 
-    signal.signal(signal.SIGINT, sig_int)
+def worker_init():
+    """
+    Initializer for worker processes. Interrupts are handled by the main
+    process, which terminates the workers. A Python-level handler is used
+    rather than SIG_IGN so external programs started by the workers get the
+    default SIGINT behavior back when they exec.
+    """
+    signal.signal(signal.SIGINT, _ignore_sigint)
 
 
 def remove_intermediates(runid: str, intermediates: List[str], protect: bool) -> None:
