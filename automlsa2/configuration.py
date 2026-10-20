@@ -5,7 +5,6 @@ import os
 import glob
 import json
 import argparse
-import subprocess
 import pprint
 from typing import List, Dict, Any
 from .helper_functions import (
@@ -249,21 +248,18 @@ def validate_arguments(
         logger.error(msg)
         end_program(78)
 
-    cmd = 'lscpu | grep -G "^CPU(s):" | grep -o -E "[0-9]+"'
     try:
-        maxthreads = (
-            subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
-            .decode()
-            .strip()
-        )
-    except subprocess.CalledProcessError:
+        maxthreads: int = len(os.sched_getaffinity(0))
+    except AttributeError:
+        maxthreads = os.cpu_count() or 0
+    if not maxthreads:
         msg = 'Unable to check number of available threads.'
         logger.warning(msg)
         msg = 'Make sure the number of specified threads is correct.'
         logger.warning(msg)
     else:
         logger.debug('Max threads found {}'.format(maxthreads))
-        if args.threads > int(maxthreads):
+        if args.threads > maxthreads:
             msg = 'Threads specified {} greater than number of available ' 'threads {}'
             logger.error(msg.format(args.threads, maxthreads))
             msg = 'Specify threads less than or equal to {} and try again.'

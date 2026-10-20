@@ -7,11 +7,12 @@ import shutil
 import glob
 import logging
 import signal
+import sys
 import psutil  # type: ignore
 from typing import List
 from hashlib import blake2b
 
-SUFFIXES = ['.nsq', '.nin', '.nhr', '.nto', '.not', '.ndb', '.ntf']
+SUFFIXES = ['.nsq', '.nin', '.nhr', '.nto', '.not', '.ndb', '.ntf', '.njs']
 
 
 def siginthandler(sig, frame):
@@ -95,7 +96,7 @@ def end_program(code: int) -> None:
         logger.info(msg.format(code))
         msg = 'Check error messages to resolve the problem.'
         logger.info(msg)
-    exit(code)
+    sys.exit(code)
 
 
 def check_if_fasta(fa):

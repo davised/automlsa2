@@ -8,61 +8,8 @@ import sys
 from rich.logging import RichHandler
 from rich.console import Console
 from .helper_functions import check_if_fasta
-from .validate_requirements import (
-    check_program,
-    validate_requirements,
-    install_blast,
-    install_mafft,
-    install_iqtree,
-)
 from .__version__ import __version__
 from ._settings import MAFFT, IQTREE
-
-
-class InstallDeps(argparse.Action):
-    def __init__(self, nargs='?', **kw):
-        super().__init__(nargs=nargs, **kw)
-
-    def __call__(self, parser, namespace, values, option_string=None):
-        if values:
-            external = values
-        else:
-            external = os.path.join('~', '.local', 'external')
-        if '~' in external:
-            external = os.path.expanduser(external)
-        external = os.path.abspath(external)
-        if not os.path.basename(external) == 'external':
-            external = os.path.join(external, 'external')
-
-        init_logger(debug=False, quiet=False, rundir='', runid='')
-        logger = logging.getLogger(__name__)
-        logger.info('Checking for dependencies and installing.')
-        install = False
-        if check_program('tblastn', 'tblastn', '-version'):
-            logger.info('tblastn already found, skipping install.')
-        else:
-            install_blast(external)
-            install = True
-        if check_program('mafft', 'mafft', '--version'):
-            logger.info('mafft already found, skipping install.')
-        else:
-            install_mafft(external)
-            install = True
-        if check_program('iqtree2', 'iqtree', '--version'):
-            logger.info('iqtree2 already found, skipping install.')
-        else:
-            install_iqtree(external)
-            install = True
-        validate_requirements(external)
-        if install:
-            msg = (
-                'Please provide given path {} as the --external flag to '
-                'use the installed programs.'
-            )
-            logger.info(msg.format(external))
-            msg = '~/.local/external will be found automatically.'
-            logger.info(msg)
-        parser.exit()
 
 
 def config_rundir(runid: str) -> str:
@@ -87,7 +34,7 @@ def config_rundir(runid: str) -> str:
                 msg = 'Unable to generate rundir "{}" : {}'
                 sys.stderr.write(msg.format(rundir, ose) + '\n')
                 sys.stderr.write('Check your path and try again.\n')
-                exit(71)
+                sys.exit(71)
     os.chdir(rundir)
     return rundir
 
@@ -232,17 +179,12 @@ def run_argparse() -> argparse.Namespace:
         ],
     )
     parser.add_argument(
-        '--install_deps',
-        help='Install dependencies into given directory. ' '[~/.local/external]',
-        action=InstallDeps,
-    )
-    parser.add_argument(
         '--external',
-        help='Path to installed external programs. ' '[~/.local/external]',
+        help='Directory with external programs to use before those in $PATH.',
         type=extant_file,
     )
     parser.add_argument('--mafft', help=f'mafft settings [{MAFFT}]', type=str)
-    parser.add_argument('--iqtree', help=f'iqtree2 settings [{IQTREE}]', type=str)
+    parser.add_argument('--iqtree', help=f'iqtree settings [{IQTREE}]', type=str)
     parser.add_argument(
         '--debug',
         help='Turn on debugging messages.',

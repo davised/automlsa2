@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 import logging
+import shlex
 import subprocess
 from .helper_functions import (
     checkpoint_reached,
@@ -63,32 +64,23 @@ def run_iqtree(
     logger = logging.getLogger(__name__)
     out_tree: str = '{}.treefile'.format(nexus)
     logger.info('Generating phylogenetic tree ({}).'.format(out_tree))
-    # cmd: List[str] = [
-    #     iqtree,
-    #     '-p', nexus,
-    #     '-m', 'MFP',
-    #     '-B', '1000',
-    #     '-alrt', '1000',
-    #     '--msub', 'nuclear',
-    #     '--merge', 'rclusterf',
-    #     '-nt', str(threads)]
-    cmd: List[str] = [iqtree, '-p', nexus, '-nt', str(threads)]
+    cmd: List[str] = [iqtree, '-p', nexus, '--prefix', nexus, '-T', str(threads)]
     cmd.extend(opts)
     if outgroup:
         cmd.extend(['-o', outgroup])
     if os.path.exists(out_tree):
         logger.info('Treefile {} already found. Skipping iqtree.'.format(out_tree))
     else:
-        logger.info('Running: {}'.format(' '.join(cmd)))
-        subprocess.run(cmd)
-        if not os.path.exists(out_tree):
-            msg = 'iqtree2 seems to have failed.'
-            logger.critical(msg)
+        logger.info('Running: {}'.format(shlex.join(cmd)))
+        result = subprocess.run(cmd, stdin=subprocess.DEVNULL)
+        if result.returncode != 0 or not os.path.exists(out_tree):
+            msg = 'iqtree seems to have failed (exit code {}).'
+            logger.critical(msg.format(result.returncode))
             msg = (
-                'Check the log files for error messages to see if they can '
+                'Check the log file {}.log for error messages to see if they can '
                 'be resolved.'
             )
-            logger.critical(msg)
+            logger.critical(msg.format(nexus))
             end_program(73)
 
     checkpoint_tracker('run_iqtree')

@@ -60,8 +60,8 @@ The intended audience is scientific researchers, computational biologists, and
 bioinformaticians who are interested in exploring phylogenetic and phylogenomic
 relationships between genes and organisms. The general idea is to allow the
 input of sequence data along with marker genes and output a robust phylogenetic
-tree. I've implemented commands to help with the installation of external
-dependencies, and I hope the software is easy to use.
+tree. All dependencies can be installed with conda, and I hope the software is
+easy to use.
 
 If you have feature requests or otherwise have ideas about how to make this
 software better, please submit an issue with your ideas!
@@ -76,16 +76,10 @@ easier.
 Installation
 ------------
 
-automlsa2 is distributed on `PyPI <https://pypi.org/project/automlsa2/>`_ as
-a universal wheel and is available on Linux/macOS and Windows (untested) and
-supports Python 3.7+ and PyPy.
-
-.. code-block:: bash
-
-    $ python3 -m pip install -U automlsa2
-
-While I will do my best to keep the git version usable, stick to a release
-and/or pypi install for the most stable experience.
+The recommended way to install automlsa2 and its external dependencies (BLAST+,
+MAFFT, and IQ-TREE) is with `conda <https://docs.conda.io>`_ (or ``mamba``)
+using the conda-forge and bioconda channels. automlsa2 supports Linux and
+macOS with Python 3.10+.
 
 git version install:
 
@@ -93,14 +87,25 @@ git version install:
 
     $ git clone https://github.com/davised/automlsa2.git
     $ cd automlsa2
-    $ python3 -m pip install -r requirements.txt
-    $ python3 -m pip install -U .
+    $ conda env create -f environment.yml
+    $ conda activate automlsa2
+    $ python3 -m pip install --no-deps .
 
-for developers, clone as above, then:
+for developers, clone and create the environment as above, then:
 
 .. code-block:: bash
 
-    $ python3 -m pip install -e . --no-use-pep517
+    $ python3 -m pip install --no-deps -e .
+    $ python3 -m pytest
+
+automlsa2 is also distributed on `PyPI <https://pypi.org/project/automlsa2/>`_,
+but pip only installs the Python dependencies. The external programs need to be
+installed separately, e.g.:
+
+.. code-block:: bash
+
+    $ conda install -c conda-forge -c bioconda blast mafft iqtree
+    $ python3 -m pip install -U automlsa2
 
 Dependencies
 ------------
@@ -114,17 +119,20 @@ Python modules:
 5. packaging
 6. psutil
 
-See ``requirements.txt`` for more info.
+See ``pyproject.toml`` or ``environment.yml`` for more info.
 
 External programs:
 
-1. `NCBI BLAST+ >= 2.10.0 <https://blast.ncbi.nlm.nih.gov>`_
-2. `mafft >= 7.471 <https://mafft.cbrc.jp/alignment/software/>`_
-3. `IQ-TREE COVID-19 release >= 2.1.1 <http://www.iqtree.org>`_
+1. `NCBI BLAST+ >= 2.12.0 <https://blast.ncbi.nlm.nih.gov>`_
+2. `mafft >= 7.487 <https://mafft.cbrc.jp/alignment/software/>`_
+3. `IQ-TREE >= 2.1.1 <https://iqtree.github.io>`_ (IQ-TREE 3 is preferred;
+   ``iqtree3``, ``iqtree2``, and ``iqtree`` are searched for in that order)
 
-You can install external programs using the ``automlsa2 --install_deps``
-command. These will be installed to ``${HOME}/.local/external`` unless
-otherwise specified.
+Tested with BLAST+ 2.17.0, mafft 7.526, and IQ-TREE 3.1.4.
+
+External programs are found in your ``$PATH``. To use programs installed
+elsewhere, give the directory containing them with ``--external``; it is
+searched before ``$PATH``.
 
 Just tell me how to run it
 --------------------------
@@ -189,9 +197,8 @@ Usage
                  [-t THREADS] [--dups] [--allow_missing ALLOW_MISSING]
                  [--outgroup OUTGROUP] [--protect]
                  [--checkpoint {validate,preblast,filtering,prealign,postalign,nexus,none}]
-                 [--install_deps [INSTALL_DEPS]] [--external EXTERNAL]
-                 [--mafft MAFFT] [--iqtree IQTREE] [--debug] [--version]
-                 [--quiet]
+                 [--external EXTERNAL] [--mafft MAFFT] [--iqtree IQTREE]
+                 [--debug] [--version] [--quiet]
                  runid
 
     This is a rewrite of autoMLSA.pl. Generates automated multi-locus sequence analyses.
@@ -221,10 +228,9 @@ optional arguments:
                                   files update, older alignments and trees are deleted.
 --checkpoint CHECKPOINT           Name of stage to stop computing on. [none]
                                   {validate,preblast,filtering,prealign,postalign,nexus,none}
---install_deps <[INSTALL_DEPS]>   Install dependencies into given directory. [~/.local/external]
---external EXTERNAL               Path to installed external programs. [~/.local/external]
+--external EXTERNAL               Directory with external programs to use before those in $PATH.
 --mafft MAFFT                     mafft settings [--localpair --maxiterate 1000 --reorder]
---iqtree IQTREE                   iqtree2 settings [-m MFP -B 1000 -alrt 1000 --msub
+--iqtree IQTREE                   iqtree settings [-m MFP -B 1000 --alrt 1000 --msub
                                   nuclear --merge rclusterf]
 --debug                           Turn on debugging messages.
 --version                         show program's version number and exit

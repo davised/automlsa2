@@ -1,29 +1,61 @@
-# Example configuration for Black.
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
 
-# NOTE: you have to use single-quoted strings in TOML for regular expressions.
-# It's the equivalent of r-strings in Python.  Multiline strings are treated as
-# verbose regular expressions by Black.  Use [ ] to denote a significant space
-# character.
+[project]
+name = "automlsa2"
+dynamic = ["version"]
+description = "Automated Multi-Locus Sequence Analysis tool"
+readme = { file = "README.rst", content-type = "text/x-rst" }
+license-files = ["LICENSE"]
+authors = [{ name = "Edward Davis", email = "ed@cgrb.oregonstate.edu" }]
+maintainers = [{ name = "Edward Davis", email = "ed@cgrb.oregonstate.edu" }]
+requires-python = ">=3.10"
+# External programs (BLAST+, MAFFT, IQ-TREE) are not on PyPI; install them
+# with conda: see environment.yml.
+dependencies = [
+    "biopython>=1.80",
+    "numpy>=1.23",
+    "packaging>=22.0",
+    "pandas>=1.5",
+    "psutil>=5.9",
+    "rich>=12.0",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Natural Language :: English",
+    "License :: Free for non-commercial use",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/davised/automlsa2"
+Issues = "https://github.com/davised/automlsa2/issues"
+
+[project.scripts]
+automlsa2 = "automlsa2.__main__:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "automlsa2.__version__.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["automlsa2*"]
 
 [tool.black]
 line-length = 88
-target-version = ['py36', 'py37', 'py38']
+target-version = ['py310', 'py311', 'py312', 'py313']
 skip-string-normalization = true
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
 
 [tool.pytest.ini_options]
-flake8-max-line-length = 99
+testpaths = ["tests"]
