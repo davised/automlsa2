@@ -78,10 +78,13 @@ def main() -> None:
     blastres: pd.DataFrame = read_blast_results(
         blastout, args.coverage, args.identity, args.threads
     )
+    genomes: List[str] = [str(labels.index(os.path.basename(f))) for f in newfastas]
     blastfilt: pd.DataFrame = print_blast_summary(
         args.runid,
         blastres,
         labels,
+        genomes,
+        queries,
         args.allow_missing,
         args.missing_check,
         args.checkpoint == 'filtering',
@@ -96,8 +99,12 @@ def main() -> None:
 
     # PHYLOGENY SECTION -------------------------------------------------------
     nexus: str = generate_nexus(args.runid, aligned, args.checkpoint == 'nexus')
+    # Taxa are named after the genome file without its extension
+    outgroup: str = args.outgroup
+    if outgroup in labels:
+        outgroup = os.path.splitext(outgroup)[0]
     treefile: str = run_iqtree(
-        args.threads, exes['iqtree'], nexus, args.outgroup, shlex.split(args.iqtree)
+        args.threads, exes['iqtree'], nexus, outgroup, shlex.split(args.iqtree)
     )
     exit_successfully(args.rundir, treefile)
 

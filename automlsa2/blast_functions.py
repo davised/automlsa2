@@ -232,10 +232,21 @@ def read_blast_results(
     return results
 
 
+def query_name(query: str) -> str:
+    """
+    Gets the query sequence ID from an extracted query file name
+    input  - path like queries/{seqid}_{hash}.fas
+    return - seqid
+    """
+    return os.path.splitext(os.path.basename(query))[0].rsplit('_', 1)[0]
+
+
 def print_blast_summary(
     runid: str,
     blastout: pd.DataFrame,
     labels: List[str],
+    genomes: List[str],
+    queries: List[str],
     nallowed: int,
     missing_check: bool,
     checkpoint: bool,
@@ -244,7 +255,8 @@ def print_blast_summary(
     """
     Generates summary of BLAST results.
 
-    input  - pandas data frame with BLAST results
+    input  - pandas data frame with BLAST results, label indexes of the
+             genomes and query files in this analysis
     return - pandas data frame with BLAST results to keep
     """
     logger: logging.Logger = logging.getLogger(__name__)
@@ -256,8 +268,15 @@ def print_blast_summary(
     keepsidx: List[str] = []
     genome_map: Dict[str, int] = {k: i for i, k in enumerate(labels)}
 
-    grouped: pd.DataFrame = blastout.groupby(['sseqid', 'qseqid'])
+    grouped: pd.DataFrame = blastout.groupby(['sseqid', 'qseqid'], observed=True)
     presence_matrix: pd.DataFrame = grouped.size().unstack('qseqid', fill_value=0)
+    # Include genomes and queries without any hits so they are reported
+    presence_matrix.index = presence_matrix.index.astype(str)
+    presence_matrix.columns = presence_matrix.columns.astype(str)
+    query_names: List[str] = sorted({query_name(q) for q in queries})
+    presence_matrix = presence_matrix.reindex(
+        index=genomes, columns=query_names, fill_value=0
+    )
     label_indexes = list(map(int, presence_matrix.index.values))
     indexes: List[int] = presence_matrix.index.tolist()
     presence_matrix.index = [labels[i] for i in label_indexes]
@@ -318,6 +337,11 @@ def print_blast_summary(
             msg = 'Keeping genome {} missing {} queries due to --allow_missing'
             logger.debug(msg.format(genome, nmissing))
             keeps.append(genome)
+    if not keeps:
+        logger.error('No genomes remain after filtering.')
+        msg = 'Check presence_matrix.tsv and consider increasing --allow_missing.'
+        logger.error(msg)
+        end_program(1)
     msg = 'Keeping these genomes ({}):\n         - {}'
     logger.info(msg.format(len(keeps), '\n         - '.join(keeps)))
     keepsidx = [str(genome_map[x]) for x in keeps]
@@ -365,7 +389,7 @@ def print_blast_summary(
     else:
         expected_filt = []
 
-    updated = set(expected_filt) != set(keeps)
+    updated = os.path.exists(expected_filt_fn) and set(expected_filt) != set(keeps)
     if updated:
         logger.debug('Found new filtered sequences')
         logger.debug('Removing downstream files, if present')

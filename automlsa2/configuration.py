@@ -93,7 +93,14 @@ def validate_arguments(
         os.mkdir(checkpoint_dir)
 
     # Reconcile config file and command line options
+    if args.protect is None:
+        if 'protect' in config.keys() and config['protect'] is not None:
+            args.protect = bool(config['protect'])
+        else:
+            args.protect = False
+
     changed: bool = False
+    blast_changed: bool = False
     if args.evalue is None:
         if 'evalue' in config.keys() and config['evalue'] is not None:
             args.evalue = float(config['evalue'])
@@ -106,7 +113,7 @@ def validate_arguments(
             pass
         else:
             if check:
-                changed = True
+                blast_changed = True
     if args.coverage is None:
         if 'coverage' in config.keys() and config['coverage'] is not None:
             args.coverage = int(config['coverage'])
@@ -148,7 +155,7 @@ def validate_arguments(
                 changed = True
     if not args.missing_check:
         if 'missing_check' in config.keys() and config['missing_check']:
-            args.allow_missing = True
+            args.missing_check = True
         else:
             args.missing_check = False
     if args.program is None:
@@ -170,7 +177,7 @@ def validate_arguments(
             pass
         else:
             if check:
-                changed = True
+                blast_changed = True
     if args.threads is None:
         if 'threads' in config.keys() and config['threads'] is not None:
             args.threads = int(config['threads'])
@@ -218,7 +225,10 @@ def validate_arguments(
             if check:
                 changed = True
 
-    if changed:
+    if blast_changed:
+        logger.info('BLAST settings changed from config; BLAST searches will be redone.')
+        remove_intermediates(args.runid, ['blast', 'genome'], args.protect)
+    elif changed:
         logger.debug('One or more settings was changed from config.')
         remove_intermediates(args.runid, ['genome'], args.protect)
 
@@ -229,23 +239,23 @@ def validate_arguments(
             args.checkpoint = 'none'
         if args.checkpoint == 'validate':
             checkpoint = True
-    if args.protect is None:
-        if 'protect' in config.keys() and config['protect'] is not None:
-            args.protect = config['protect']
-        else:
-            args.protect = False
 
-    if args.evalue > 10:
-        msg = 'Specified evalue "{}" is greater than 10.'
+    if not 0 < args.evalue <= 10:
+        msg = 'Specified evalue "{}" is not greater than 0 and at most 10.'
         logger.error(msg.format(args.evalue))
-        msg = 'Please specify an evalue < 10 and try again.'
+        msg = 'Please specify an evalue in (0, 10] and try again.'
         logger.error(msg)
         end_program(78)
-    if args.coverage not in range(0, 100):
-        msg = 'Coverage value is not between 0 and 100.'
-        logger.error(msg.format(args.coverage))
-        msg = 'Please specify a coverage between 0 and 100 and try again.'
-        logger.error(msg)
+    for name in ('coverage', 'identity'):
+        value = getattr(args, name)
+        if not 0 <= value <= 100:
+            msg = '{} value {} is not between 0 and 100.'
+            logger.error(msg.format(name.capitalize(), value))
+            msg = 'Please specify a {} between 0 and 100 and try again.'
+            logger.error(msg.format(name))
+            end_program(78)
+    if args.threads < 1:
+        logger.error('Threads must be at least 1, not {}.'.format(args.threads))
         end_program(78)
 
     try:

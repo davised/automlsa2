@@ -8,6 +8,7 @@ import glob
 import logging
 import signal
 import sys
+import time
 import psutil  # type: ignore
 from typing import List
 from hashlib import blake2b
@@ -84,6 +85,9 @@ def remove_intermediates(runid: str, intermediates: List[str], protect: bool) ->
         'blast_filtered.tsv',
         'expected_filt.json',
     ]
+    if 'blast' in intermediates:
+        for blastfile in glob.iglob(os.path.join('blast', '*.tab')):
+            os.remove(blastfile)
     if 'genome' in intermediates:
         for deldir in ['unaligned', 'aligned']:
             if os.path.exists(deldir):
@@ -91,11 +95,18 @@ def remove_intermediates(runid: str, intermediates: List[str], protect: bool) ->
         for fullname in [os.path.join('.autoMLSA', fn) for fn in genome_tmpfiles]:
             if os.path.exists(fullname):
                 os.remove(fullname)
-    for delfile in glob.iglob(runid + '.nex*'):
-        logger.info('Backing up nexus and tree files to backup dir.')
-        shutil.move(delfile, 'backup')
-        if os.path.exists(delfile):
-            os.remove(delfile)
+    delfiles: List[str] = sorted(glob.glob(glob.escape(runid) + '.nex*'))
+    if delfiles:
+        # Each backup gets its own directory so earlier backups are kept
+        backupdir = os.path.join('backup', time.strftime('%Y%m%d-%H%M%S'))
+        i = 1
+        while os.path.exists(backupdir):
+            backupdir = os.path.join('backup', time.strftime('%Y%m%d-%H%M%S') + f'-{i}')
+            i += 1
+        os.makedirs(backupdir)
+        logger.info('Backing up nexus and tree files to {}.'.format(backupdir))
+        for delfile in delfiles:
+            shutil.move(delfile, backupdir)
 
 
 def end_program(code: int) -> None:

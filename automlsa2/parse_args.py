@@ -18,23 +18,22 @@ def config_rundir(runid: str) -> str:
     input  - runid as given as input
     output - full path to the run directory
     """
-    rundir: str = ''
-    if os.path.exists('../{}'.format(runid)):
-        rundir = os.path.abspath('../{}'.format(runid))
-    else:
-        rundir = os.path.abspath('./{}'.format(runid))
-        if not os.path.exists(rundir):
-            try:
-                os.mkdir(rundir)
-                os.mkdir(os.path.join(rundir, 'backup'))
-                os.mkdir(os.path.join(rundir, '.autoMLSA'))
-                os.mkdir(os.path.join(rundir, '.autoMLSA', 'backups'))
-                os.mkdir(os.path.join(rundir, '.autoMLSA', 'checkpoint'))
-            except OSError as ose:
-                msg = 'Unable to generate rundir "{}" : {}'
-                sys.stderr.write(msg.format(rundir, ose) + '\n')
-                sys.stderr.write('Check your path and try again.\n')
-                sys.exit(71)
+    rundir: str = os.path.abspath(runid)
+    # Allow running from inside the run directory itself
+    if os.path.basename(os.getcwd()) == runid and not os.path.exists(rundir):
+        rundir = os.getcwd()
+    try:
+        for subdir in [
+            'backup',
+            os.path.join('.autoMLSA', 'backups'),
+            os.path.join('.autoMLSA', 'checkpoint'),
+        ]:
+            os.makedirs(os.path.join(rundir, subdir), exist_ok=True)
+    except OSError as ose:
+        msg = 'Unable to generate rundir "{}" : {}'
+        sys.stderr.write(msg.format(rundir, ose) + '\n')
+        sys.stderr.write('Check your path and try again.\n')
+        sys.exit(71)
     os.chdir(rundir)
     return rundir
 
@@ -163,6 +162,7 @@ def run_argparse() -> argparse.Namespace:
         help='Save files from getting overwritten. By default, '
         'as input files update, older alignments and trees are deleted.',
         action='store_true',
+        default=None,
     )
     parser.add_argument(
         '--checkpoint',
