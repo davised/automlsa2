@@ -4,7 +4,7 @@ import os
 import logging
 import shlex
 import subprocess
-from .helper_functions import checkpoint_reached, checkpoint_tracker
+from .helper_functions import checkpoint_reached, checkpoint_tracker, end_program
 from rich.progress import track
 
 # from .pbar import track_wide
@@ -43,15 +43,24 @@ def run_mafft(
             logger.debug(msg.format(outname))
         else:
             cmd: List[str] = base_cmd + [unalign]
-            cmdstr = ' '.join([shlex.quote(x) for x in cmd]) + ' > {}'.format(
-                shlex.quote(outname)
-            )
+            cmdstr = shlex.join(cmd) + ' > {}'.format(shlex.quote(outname))
             logger.debug(cmdstr)
             if checkpoint == 'prealign':
                 cmdstrs.append(cmdstr)
             else:
-                with open(outname, 'w') as fh, open(logname, 'w') as logfh:
-                    subprocess.run(cmd, stdout=fh, stderr=logfh, text=True)
+                # Write to a temporary file so a failed run is not mistaken
+                # for a finished alignment when the analysis is resumed.
+                tmpname: str = '{}.tmp'.format(outname)
+                with open(tmpname, 'w') as fh, open(logname, 'w') as logfh:
+                    result = subprocess.run(
+                        cmd, stdout=fh, stderr=logfh, stdin=subprocess.DEVNULL
+                    )
+                if result.returncode != 0 or os.path.getsize(tmpname) == 0:
+                    os.remove(tmpname)
+                    msg = 'mafft failed on {} (exit code {}). Check {} for details.'
+                    logger.critical(msg.format(unalign, result.returncode, logname))
+                    end_program(73)
+                os.replace(tmpname, outname)
     if cmdstrs:
         with open('mafftcmds.txt', 'w') as fh:
             fh.write('\n'.join(cmdstrs))

@@ -1,0 +1,22 @@
+# Conda environment with automlsa2's Python and external dependencies.
+#   conda env create -f environment.yml
+#   conda activate automlsa2
+#   python -m pip install --no-deps .
+name: automlsa2
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python>=3.10
+  - biopython>=1.80
+  - numpy>=1.23
+  - packaging>=22.0
+  - pandas>=1.5
+  - psutil>=5.9
+  - rich>=12.0
+  - blast>=2.12.0
+  - mafft>=7.487
+  - iqtree>=2.1.1
+  - pip
+  - pytest
+  - hypothesis

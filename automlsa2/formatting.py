@@ -85,7 +85,9 @@ def convert_fasta(
     else:
         expected_fastas = []
 
-    updated: bool = set(expected_fastas) != set(new_fastas)
+    updated: bool = os.path.exists(expected_fastas_fn) and set(expected_fastas) != set(
+        new_fastas
+    )
     if updated or deleted:
         logger.debug('Found new genome files')
         remove_intermediates(runid, ['genome'], protect)
@@ -275,7 +277,9 @@ def get_queries(
     else:
         expected_queries = []
 
-    updated: bool = set(expected_queries) != set(new_queries)
+    updated: bool = os.path.exists(expected_queries_fn) and set(expected_queries) != set(
+        new_queries
+    )
     if updated:
         if all(query in new_queries for query in expected_queries):
             logger.debug('Found new query sequences')

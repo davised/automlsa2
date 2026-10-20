@@ -12,7 +12,7 @@ import csv
 import sys
 import concurrent.futures as cf
 from rich.progress import track
-from typing import List, Dict, Any, DefaultDict
+from typing import List, Dict, Any, DefaultDict, Tuple
 from .helper_functions import (
     json_writer,
     checkpoint_reached,
@@ -36,14 +36,44 @@ def make_blast_database(makeblastdb: str, fasta: str) -> None:
     input  - fasta file
     return - null
     """
+    logger = logging.getLogger(__name__)
     exist: List[bool] = [os.path.exists(fasta + x) for x in SUFFIXES]
     if not all(exist):
-        with open(os.path.join('fasta', 'makeblastdb.log'), 'a') as textlog:
-            subprocess.run(
-                [makeblastdb, '-dbtype', 'nucl', '-in', fasta],
+        logfn: str = os.path.join('fasta', 'makeblastdb.log')
+        with open(logfn, 'a') as textlog:
+            result = subprocess.run(
+                [makeblastdb, '-dbtype', 'nucl', '-in', fasta, '-out', fasta],
                 stdout=textlog,
                 stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL,
             )
+        if result.returncode != 0:
+            msg = 'makeblastdb failed on {} (exit code {}). Check {} for details.'
+            logger.critical(msg.format(fasta, result.returncode, logfn))
+            end_program(73)
+
+
+def run_blast(cmd: List[str]) -> Tuple[str, int, str]:
+    """Runs a single BLAST search, writing to a temporary file first so
+    failed searches are not mistaken for finished ones on resume.
+
+    input  - BLAST command; the last argument is the output path
+    return - output path, exit code, and stderr
+    """
+    outpath: str = cmd[-1]
+    tmppath: str = outpath + '.tmp'
+    result = subprocess.run(
+        cmd[:-1] + [tmppath],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        stdin=subprocess.DEVNULL,
+        text=True,
+    )
+    if result.returncode == 0:
+        os.replace(tmppath, outpath)
+    elif os.path.exists(tmppath):
+        os.remove(tmppath)
+    return (outpath, result.returncode, result.stderr)
 
 
 def reader(fn: str) -> List[List[str]]:
@@ -105,7 +135,7 @@ def generate_blast_list(
             blastfile: str = os.path.join(rundir, 'blastcmds.txt')
             with open(blastfile, 'w') as fh:
                 for cmd in cmds:
-                    fh.write(' '.join([shlex.quote(x) for x in cmd]) + '\n')
+                    fh.write(shlex.join(cmd) + '\n')
             msg = 'BLAST commands written to {}. Exiting.'
             logger.info(msg.format(blastfile))
             checkpoint_reached('prior to BLAST searches')
@@ -114,15 +144,23 @@ def generate_blast_list(
             ncmds: int = len(cmds)
             logger.info(msg.format(ncmds, threads))
             p: cf.ProcessPoolExecutor = cf.ProcessPoolExecutor(
-                threads, worker_init(os.getpid())
+                threads, initializer=worker_init
             )
+            failed: List[Tuple[str, int, str]] = []
             with p:
-                for _ in track(
-                    p.map(subprocess.run, cmds),
+                for res in track(
+                    p.map(run_blast, cmds),
                     'Blast Search...',
                     ncmds,
                 ):
-                    pass
+                    if res[1] != 0:
+                        failed.append(res)
+            if failed:
+                for outpath, code, err in failed:
+                    msg = 'BLAST search for {} failed (exit code {}): {}'
+                    logger.error(msg.format(outpath, code, err.strip()))
+                logger.critical('{} BLAST searches failed.'.format(len(failed)))
+                end_program(73)
     else:
         logger.info('No BLAST searches remaining. Moving to parse.')
 
@@ -158,11 +196,11 @@ def read_blast_results(
         'qseqid': 'category',
         'sseqid': 'category',
         'saccver': 'string',
-        'pident': np.float,
-        'qlen': np.int,
-        'length': np.int,
-        'bitscore': np.float,
-        'qcovhsp': np.int,
+        'pident': np.float64,
+        'qlen': np.int64,
+        'length': np.int64,
+        'bitscore': np.float64,
+        'qcovhsp': np.int64,
         'stitle': 'string',
         'sseq': 'string',
     }
@@ -176,7 +214,7 @@ def read_blast_results(
         blastrows: List[List[str]] = []
         nfiles = len(blastfiles)
         p: cf.ProcessPoolExecutor = cf.ProcessPoolExecutor(
-            threads, worker_init(os.getpid())
+            threads, initializer=worker_init
         )
         with p:
             for dat in track(
@@ -194,10 +232,21 @@ def read_blast_results(
     return results
 
 
+def query_name(query: str) -> str:
+    """
+    Gets the query sequence ID from an extracted query file name
+    input  - path like queries/{seqid}_{hash}.fas
+    return - seqid
+    """
+    return os.path.splitext(os.path.basename(query))[0].rsplit('_', 1)[0]
+
+
 def print_blast_summary(
     runid: str,
     blastout: pd.DataFrame,
     labels: List[str],
+    genomes: List[str],
+    queries: List[str],
     nallowed: int,
     missing_check: bool,
     checkpoint: bool,
@@ -206,7 +255,8 @@ def print_blast_summary(
     """
     Generates summary of BLAST results.
 
-    input  - pandas data frame with BLAST results
+    input  - pandas data frame with BLAST results, label indexes of the
+             genomes and query files in this analysis
     return - pandas data frame with BLAST results to keep
     """
     logger: logging.Logger = logging.getLogger(__name__)
@@ -218,8 +268,15 @@ def print_blast_summary(
     keepsidx: List[str] = []
     genome_map: Dict[str, int] = {k: i for i, k in enumerate(labels)}
 
-    grouped: pd.DataFrame = blastout.groupby(['sseqid', 'qseqid'])
+    grouped: pd.DataFrame = blastout.groupby(['sseqid', 'qseqid'], observed=True)
     presence_matrix: pd.DataFrame = grouped.size().unstack('qseqid', fill_value=0)
+    # Include genomes and queries without any hits so they are reported
+    presence_matrix.index = presence_matrix.index.astype(str)
+    presence_matrix.columns = presence_matrix.columns.astype(str)
+    query_names: List[str] = sorted({query_name(q) for q in queries})
+    presence_matrix = presence_matrix.reindex(
+        index=genomes, columns=query_names, fill_value=0
+    )
     label_indexes = list(map(int, presence_matrix.index.values))
     indexes: List[int] = presence_matrix.index.tolist()
     presence_matrix.index = [labels[i] for i in label_indexes]
@@ -280,6 +337,11 @@ def print_blast_summary(
             msg = 'Keeping genome {} missing {} queries due to --allow_missing'
             logger.debug(msg.format(genome, nmissing))
             keeps.append(genome)
+    if not keeps:
+        logger.error('No genomes remain after filtering.')
+        msg = 'Check presence_matrix.tsv and consider increasing --allow_missing.'
+        logger.error(msg)
+        end_program(1)
     msg = 'Keeping these genomes ({}):\n         - {}'
     logger.info(msg.format(len(keeps), '\n         - '.join(keeps)))
     keepsidx = [str(genome_map[x]) for x in keeps]
@@ -327,7 +389,7 @@ def print_blast_summary(
     else:
         expected_filt = []
 
-    updated = set(expected_filt) != set(keeps)
+    updated = os.path.exists(expected_filt_fn) and set(expected_filt) != set(keeps)
     if updated:
         logger.debug('Found new filtered sequences')
         logger.debug('Removing downstream files, if present')
