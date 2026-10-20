@@ -155,7 +155,10 @@ def run_argparse() -> argparse.Namespace:
         '--allow_missing', help='Allow for N missing genes per genome. [0]', type=int
     )
     parser.add_argument(
-        '--outgroup', help='Name of outgroup file or strain to root on.', type=str
+        '--outgroup',
+        help='Name of outgroup genome (file name or strain) to root on. '
+        'Separate multiple genomes with commas.',
+        type=str,
     )
     parser.add_argument(
         '--protect',

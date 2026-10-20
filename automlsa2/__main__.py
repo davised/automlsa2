@@ -20,7 +20,7 @@ from .blast_functions import (
 from .configuration import read_config, validate_arguments, get_labels
 from .formatting import convert_fasta, get_queries
 from .mafft import run_mafft
-from .phylogeny import generate_nexus, run_iqtree
+from .phylogeny import check_outgroup, generate_nexus, run_iqtree
 from signal import signal, SIGPIPE, SIGINT, SIG_DFL
 from .__version__ import __version__
 
@@ -99,10 +99,7 @@ def main() -> None:
 
     # PHYLOGENY SECTION -------------------------------------------------------
     nexus: str = generate_nexus(args.runid, aligned, args.checkpoint == 'nexus')
-    # Taxa are named after the genome file without its extension
-    outgroup: str = args.outgroup
-    if outgroup in labels:
-        outgroup = os.path.splitext(outgroup)[0]
+    outgroup: str = check_outgroup(args.outgroup, labels, blastfilt)
     treefile: str = run_iqtree(
         args.threads, exes['iqtree'], nexus, outgroup, shlex.split(args.iqtree)
     )

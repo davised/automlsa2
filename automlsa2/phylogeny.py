@@ -9,6 +9,7 @@ from .helper_functions import (
     checkpoint_tracker,
     end_program,
 )
+import pandas as pd  # type: ignore
 from typing import List
 
 
@@ -50,6 +51,36 @@ def generate_nexus(runid: str, aligned: List[str], checkpoint: bool) -> str:
 
     checkpoint_tracker('generate_nexus')
     return nexus
+
+
+def check_outgroup(outgroup: str, labels: List[str], blastout: pd.DataFrame) -> str:
+    """
+    Converts outgroup genome file names or paths to taxon names and checks
+    that they are in the analysis.
+
+    input  - comma separated outgroup(s), labels, filtered BLAST results
+    return - comma separated outgroup taxon names for iqtree -o
+    """
+    logger = logging.getLogger(__name__)
+    if not outgroup:
+        return outgroup
+    taxa = {
+        os.path.splitext(labels[int(i)])[0] for i in blastout['sseqid'].astype(str)
+    }
+    names: List[str] = []
+    for name in outgroup.split(','):
+        name = name.strip()
+        # Taxa are named after the genome file without its extension
+        if os.path.basename(name) in labels:
+            name = os.path.splitext(os.path.basename(name))[0]
+        if name not in taxa:
+            msg = 'Outgroup {} is not one of the genomes in the analysis.'
+            logger.error(msg.format(name))
+            msg = 'Use a genome name from presence_matrix.tsv without its file extension.'
+            logger.error(msg)
+            end_program(78)
+        names.append(name)
+    return ','.join(names)
 
 
 def run_iqtree(

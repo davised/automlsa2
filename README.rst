@@ -223,7 +223,8 @@ optional arguments:
 --dups                            Allow for duplicate query names for more sequence
                                   coverage across disparate organisms.
 --allow_missing ALLOW_MISSING     Allow for N missing genes per genome. [0]
---outgroup OUTGROUP               Name of outgroup file or strain to root on.
+--outgroup OUTGROUP               Name of outgroup genome (file name or strain) to root on.
+                                  Separate multiple genomes with commas.
 --protect                         Save files from getting overwritten. By default, as input
                                   files update, older alignments and trees are deleted.
 --checkpoint CHECKPOINT           Name of stage to stop computing on. [none]
@@ -231,7 +232,7 @@ optional arguments:
 --external EXTERNAL               Directory with external programs to use before those in $PATH.
 --mafft MAFFT                     mafft settings [--localpair --maxiterate 1000 --reorder]
 --iqtree IQTREE                   iqtree settings [-m MFP -B 1000 --alrt 1000 --msub
-                                  nuclear --merge rclusterf]
+                                  nuclear --merge rclusterf --keep-ident]
 --debug                           Turn on debugging messages.
 --version                         show program's version number and exit
 --quiet                           Turn off progress messages.
