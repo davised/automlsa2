@@ -10,7 +10,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: REPLACE_WITH_SDIST_SHA256
+  sha256: eb9920d04a78ee6f2b151496a4b0931277428052ad1f9b5101c7a1fa43201a5c
 
 build:
   number: 0
