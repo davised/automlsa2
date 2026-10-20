@@ -3,7 +3,7 @@ automlsa2
 
 .. image:: https://forthebadge.com/images/badges/built-with-science.svg
     :alt: Made with science
-    :target: https://cgrb.oregonstate.edu
+    :target: https://cqls.oregonstate.edu
 .. image:: https://img.shields.io/github/v/release/davised/automlsa2
     :alt: GitHub version
     :target: https://github.com/davised/automlsa2/releases/latest
@@ -346,26 +346,123 @@ is used: the one with the highest bitscore, then the highest query coverage.
 Output files
 ------------
 
-All files are written to the run directory (``runID``). The main results are:
+All files are written to the run directory, named after the ``runID``. In the
+lists below, ``<genome>`` is a genome FASTA file name, ``<gene>`` is a query
+sequence ID, and ``<hash>`` is a hash of the query sequence.
 
-* ``runID.nex.treefile`` - the final maximum-likelihood tree (Newick), with
-  SH-aLRT and ultrafast bootstrap support values on each branch
-  (``SH-aLRT/UFBoot``).
-* ``runID.nex.contree`` - the bootstrap consensus tree.
-* ``runID.nex.iqtree`` - the IQ-TREE report, including the selected models
-  and partitioning scheme.
-* ``runID.nex.splits.nex`` - bootstrap support for splits, e.g. for viewing
-  as a network in SplitsTree.
-* ``runID.nex.log`` - the IQ-TREE log.
-* ``presence_matrix.tsv`` - number of BLAST hits per genome and gene.
-* ``blast_summary.json``, ``missing_by_genome.json``, ``missing_counts.json``
-  - summaries of missing genes per genome and per gene.
-* ``aligned/`` - the per-gene alignments, and ``runID.nex``, the partition
-  file pointing to them.
-* ``runID.log`` - the automlsa2 log.
+Results
+~~~~~~~
 
-Intermediate files are kept in ``fasta/`` (renamed genomes and BLAST
-databases), ``queries/``, ``blast/``, ``unaligned/``, and ``.autoMLSA/``.
+These are the files most people need:
+
+``runID.nex.treefile``
+    The final maximum-likelihood tree in Newick format. Branches are labelled
+    with SH-aLRT and ultrafast bootstrap support values (``SH-aLRT/UFBoot``).
+``runID.nex.contree``
+    The ultrafast bootstrap consensus tree.
+``runID.nex.splits.nex``
+    Bootstrap support for splits, e.g. for viewing as a network in SplitsTree.
+``runID.nex.iqtree``
+    The IQ-TREE report, with the selected models, partitioning scheme, and
+    tree.
+``presence_matrix.tsv``
+    Number of BLAST hits for each genome (rows) and gene (columns). Use this
+    to see which genomes are missing which genes.
+``aligned/<gene>.aln``
+    The alignment for each gene, in FASTA format. Sequences are named after
+    the genome file without its extension.
+
+Run information
+~~~~~~~~~~~~~~~
+
+``runID.log``
+    The automlsa2 log, including debugging messages.
+``config.json``
+    The settings for this run, reused when the analysis is run again. It
+    can also be passed to ``--config`` to start a new run with the same
+    settings.
+``blast_summary.json``
+    Gene and genome names and counts, and for each gene and genome the list
+    of missing genomes or genes and the percent missing.
+``missing_by_genome.json``
+    The genes missing from each genome, for genomes missing at least one gene.
+``missing_counts.json``
+    Genomes grouped by the number of genes they are missing.
+``blastcmds.txt``
+    Only with ``--checkpoint preblast``: the BLAST commands to run, one per
+    line, e.g. for submitting to a compute cluster.
+``mafftcmds.txt``
+    Only with ``--checkpoint prealign``: the mafft commands to run.
+
+Intermediate files
+~~~~~~~~~~~~~~~~~~
+
+Files produced and used by each step of the pipeline, in order:
+
+``fasta/<genome>``
+    A copy of each genome with its sequences renamed to ``>N original_id``,
+    where ``N`` is the genome's index in ``.autoMLSA/labels.json``.
+``fasta/<genome>.n*``
+    The BLAST database for each genome (``.ndb``, ``.nhr``, ``.nin``,
+    ``.njs``, ``.not``, ``.nsq``, ``.ntf``, ``.nto``).
+``fasta/makeblastdb.log``
+    Output from makeblastdb.
+``queries/<gene>_<hash>.fas``
+    Each query sequence in its own FASTA file, with the sequence ID made safe
+    for file names.
+``blast/<gene>_<hash>_vs_<genome>.tab``
+    BLAST results for each query and genome, in tabular format with comment
+    lines (``-outfmt 7``). The columns are: query ID, subject ID, subject
+    accession, percent identity, query length, alignment length, bitscore,
+    percent query coverage per HSP, subject title, and the aligned subject
+    sequence.
+``unaligned/<gene>.fas``
+    For each gene, the best hit from each genome that was kept, with gaps
+    removed.
+``aligned/<gene>.aln.log``
+    Output from mafft for each gene.
+``runID.nex``
+    The NEXUS partition file given to IQ-TREE, with one partition for each
+    file in ``aligned/``.
+``runID.nex.*``
+    Other IQ-TREE output: ``.log`` (the IQ-TREE log), ``.best_scheme`` and
+    ``.best_scheme.nex`` (the best partitioning scheme), ``.best_model.nex``
+    (the best models), ``.bionj`` (the BIONJ starting tree), ``.mldist`` (ML
+    distances), and ``.model.gz`` and ``.ckp.gz`` (IQ-TREE checkpoints).
+``backup/<timestamp>/``
+    Previous ``runID.nex*`` files, moved here when inputs or settings change.
+
+Files ending in ``.tmp`` in ``blast/`` or ``aligned/`` are left by searches
+or alignments that were interrupted or failed. They are ignored and replaced
+when the analysis is run again.
+
+The ``.autoMLSA/`` directory holds files automlsa2 uses to track the state of
+the analysis. You should not need to edit them:
+
+``labels.json``
+    Genome file names; each genome's position in this list is the index used
+    in ``fasta/`` headers and BLAST results.
+``rename.json``
+    The index and a hash of the sequences of each genome, used to detect
+    changed genome files.
+``expected_fastas.json``, ``expected_queries.json``, ``expected_filt.json``
+    The genomes, query files, and filtered genomes from the last run, used to
+    detect added or removed inputs.
+``blast_results.tsv``
+    All BLAST hits that pass the ``--identity`` and ``--coverage`` cut-offs.
+``blast_filtered.tsv``
+    The best hit for each gene from each genome that was kept.
+``keepsidx.json``
+    Indexes of the genomes kept after filtering.
+``single_copy.json``
+    For each gene, whether it has exactly one hit in more than 90% of the
+    genomes. This is an estimate of whether the gene is single copy; it is
+    not used by the analysis.
+``backups/``
+    Copies of the query FASTA files, used if the originals are moved or
+    deleted.
+``checkpoint/``
+    Empty marker files, one for each step that has been completed.
 
 Re-running and resuming
 -----------------------
@@ -412,7 +509,7 @@ The end-to-end test takes about 2-3 minutes with 4 CPUs.
 TODO
 ----
 
-☑ Write list of output files.
+☑ Write detailed list of intermediate files.
 
 ☐ Compare functionality of this version to prior autoMLSA.pl version.
 
@@ -427,7 +524,7 @@ a look. Also, feel free to fork and submit pull requests.
 Author Contact
 --------------
 
-`Ed Davis <mailto:ed@cgrb.oregonstate.edu>`_
+`Ed Davis <mailto:ed@cqls.oregonstate.edu>`_
 
 Acknowledgments
 ----------------
@@ -440,7 +537,7 @@ Special thanks for helping me test the software and get the python code packaged
 Also, thanks to these groups for supporting me through my scientific career:
 
 * `OSU Chang Lab <https://github.com/osuchanglab>`_
-* `Center for Genome Research and Biocomputing @ OSU <https://cgrb.oregonstate.edu>`_
+* `Center for Quantitative Life Sciences (formerly the Center for Genome Research and Biocomputing) @ OSU <https://cqls.oregonstate.edu>`_
 
 License
 -------

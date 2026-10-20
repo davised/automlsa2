@@ -9,8 +9,8 @@ description = "Automated Multi-Locus Sequence Analysis tool"
 readme = { file = "README.rst", content-type = "text/x-rst" }
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
-authors = [{ name = "Edward Davis", email = "ed@cgrb.oregonstate.edu" }]
-maintainers = [{ name = "Edward Davis", email = "ed@cgrb.oregonstate.edu" }]
+authors = [{ name = "Edward Davis", email = "ed@cqls.oregonstate.edu" }]
+maintainers = [{ name = "Edward Davis", email = "ed@cqls.oregonstate.edu" }]
 requires-python = ">=3.10"
 # External programs (BLAST+, MAFFT, IQ-TREE) are not on PyPI; install them
 # with conda: see environment.yml.
