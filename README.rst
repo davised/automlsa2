@@ -325,12 +325,10 @@ Also, thanks to these groups for supporting me through my scientific career:
 License
 -------
 
-automlsa2 is distributed under the terms listed in the ``LICENSE`` file. The
-software is free for non-commercial use.
+automlsa2 is distributed under the BSD 3-Clause License. See the ``LICENSE``
+file for details.
 
 Copyrights
 ----------
 
-Copyright (c) 2020 Oregon State University
-
-All Rights Reserved.
+Copyright (c) 2026, Edward Davis, Oregon State University

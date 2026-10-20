@@ -52,8 +52,8 @@ about:
     automlsa2 builds multi-locus sequence analysis phylogenies from a set of
     marker gene queries and target genome FASTA files using BLAST+, MAFFT,
     and IQ-TREE.
-  license: Free for non-commercial use (Oregon State University)
-  license_family: Other
+  license: BSD-3-Clause
+  license_family: BSD
   license_file: LICENSE
   dev_url: https://github.com/davised/automlsa2
 

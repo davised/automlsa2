@@ -7,6 +7,7 @@ name = "automlsa2"
 dynamic = ["version"]
 description = "Automated Multi-Locus Sequence Analysis tool"
 readme = { file = "README.rst", content-type = "text/x-rst" }
+license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 authors = [{ name = "Edward Davis", email = "ed@cgrb.oregonstate.edu" }]
 maintainers = [{ name = "Edward Davis", email = "ed@cgrb.oregonstate.edu" }]
@@ -25,7 +26,6 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Natural Language :: English",
-    "License :: Free for non-commercial use",
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
     "Programming Language :: Python :: 3",
