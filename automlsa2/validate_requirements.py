@@ -29,7 +29,12 @@ PROGRAMS: Dict[str, Tuple[List[str], str, str, str]] = {
     'blastn': (['blastn'], '-version', BLASTVERMIN, BLASTVERTESTED),
     'makeblastdb': (['makeblastdb'], '-version', BLASTVERMIN, BLASTVERTESTED),
     'mafft': (['mafft'], '--version', MAFFTVERMIN, MAFFTVERTESTED),
-    'iqtree': (['iqtree3', 'iqtree2', 'iqtree'], '--version', IQTREEVERMIN, IQTREEVERTESTED),
+    'iqtree': (
+        ['iqtree3', 'iqtree2', 'iqtree'],
+        '--version',
+        IQTREEVERMIN,
+        IQTREEVERTESTED,
+    ),
 }
 
 
@@ -110,12 +115,16 @@ def check_program(exe: str, program_name: str, version_flag: str) -> bool:
         logger.error(msg.format(program_name, exe))
         return False
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as err:
-        logger.error('Unable to check {} version ({}): {}'.format(program_name, exe, err))
+        logger.error(
+            'Unable to check {} version ({}): {}'.format(program_name, exe, err)
+        )
         return False
 
     ver = get_program_version(verstr, program_name)
     refver = pv.Version(minver)
-    logger.debug('Program version found: {} -> {}; min -> {}'.format(program_name, ver, refver))
+    logger.debug(
+        'Program version found: {} -> {}; min -> {}'.format(program_name, ver, refver)
+    )
     if ver < refver:
         raise ProgramMismatchError(
             '{} version {} needs to be updated to {} at minimum. {}'.format(

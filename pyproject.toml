@@ -57,5 +57,8 @@ line-length = 88
 target-version = ['py310', 'py311', 'py312', 'py313']
 skip-string-normalization = true
 
+[tool.mypy]
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

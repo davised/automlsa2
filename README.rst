@@ -10,6 +10,12 @@ automlsa2
 .. image:: https://img.shields.io/pypi/v/automlsa2
     :alt: PyPI package version
     :target: https://pypi.org/project/automlsa2
+.. image:: https://img.shields.io/conda/vn/bioconda/automlsa2
+    :alt: Bioconda package version
+    :target: https://bioconda.github.io/recipes/automlsa2/README.html
+.. image:: https://img.shields.io/pypi/pyversions/automlsa2
+    :alt: Supported Python versions
+    :target: https://pypi.org/project/automlsa2
 .. image:: https://img.shields.io/github/release-date/davised/automlsa2
     :alt: GitHub Release Date
     :target: https://github.com/davised/automlsa2/releases
@@ -19,9 +25,12 @@ automlsa2
 .. image:: https://img.shields.io/badge/Made%20with-Python-1f425f.svg
     :alt: Made with python
     :target: https://python.org
-.. image:: https://img.shields.io/lgtm/grade/python/g/davised/automlsa2.svg?logo=lgtm&logoWidth=18
-    :alt: Language grade: Python
-    :target: https://lgtm.com/projects/g/davised/automlsa2/context:python
+.. image:: https://github.com/davised/automlsa2/actions/workflows/tests.yml/badge.svg
+    :alt: Tests
+    :target: https://github.com/davised/automlsa2/actions/workflows/tests.yml
+.. image:: https://img.shields.io/badge/License-BSD_3--Clause-blue.svg
+    :alt: License: BSD 3-Clause
+    :target: https://github.com/davised/automlsa2/blob/main/LICENSE
 .. image:: https://img.shields.io/github/last-commit/davised/automlsa2
     :alt: Latest commit
     :target: https://github.com/davised/automlsa2/commits
@@ -31,9 +40,9 @@ automlsa2
 .. image:: https://img.shields.io/pypi/dm/automlsa2
     :alt: Downloads per month
     :target: https://pypistats.org/packages/automlsa2
-.. image:: https://img.shields.io/tokei/lines/github/davised/automlsa2
-    :alt: Lines of code
-    :target: https://github.com/davised/automlsa2.git
+.. image:: https://img.shields.io/conda/dn/bioconda/automlsa2
+    :alt: Bioconda downloads
+    :target: https://anaconda.org/bioconda/automlsa2
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :alt: Black format
     :target: https://github.com/psf/black
@@ -76,12 +85,38 @@ easier.
 Installation
 ------------
 
-The recommended way to install automlsa2 and its external dependencies (BLAST+,
-MAFFT, and IQ-TREE) is with `conda <https://docs.conda.io>`_ (or ``mamba``)
-using the conda-forge and bioconda channels. automlsa2 supports Linux and
-macOS with Python 3.10+.
+automlsa2 runs on Linux and macOS with Python 3.10 or newer. Windows users can
+run it under WSL.
 
-git version install:
+Bioconda (recommended)
+~~~~~~~~~~~~~~~~~~~~~~
+
+The easiest way to install automlsa2 along with all of its dependencies,
+including BLAST+, MAFFT, and IQ-TREE, is from `bioconda
+<https://bioconda.github.io>`_ using `conda <https://docs.conda.io>`_ or
+`mamba <https://mamba.readthedocs.io>`_:
+
+.. code-block:: bash
+
+    $ conda create -n automlsa2 -c conda-forge -c bioconda automlsa2
+    $ conda activate automlsa2
+    $ automlsa2 --version
+
+PyPI
+~~~~
+
+automlsa2 is also distributed on `PyPI <https://pypi.org/project/automlsa2/>`_,
+but pip only installs the Python dependencies. The external programs need to be
+installed separately, e.g. with conda:
+
+.. code-block:: bash
+
+    $ conda create -n automlsa2 -c conda-forge -c bioconda python blast mafft iqtree
+    $ conda activate automlsa2
+    $ python3 -m pip install automlsa2
+
+From source
+~~~~~~~~~~~
 
 .. code-block:: bash
 
@@ -91,21 +126,21 @@ git version install:
     $ conda activate automlsa2
     $ python3 -m pip install --no-deps .
 
-for developers, clone and create the environment as above, then:
+For development, install in editable mode instead and run the tests:
 
 .. code-block:: bash
 
     $ python3 -m pip install --no-deps -e .
     $ python3 -m pytest
 
-automlsa2 is also distributed on `PyPI <https://pypi.org/project/automlsa2/>`_,
-but pip only installs the Python dependencies. The external programs need to be
-installed separately, e.g.:
+Upgrading from 0.9 or earlier
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: bash
-
-    $ conda install -c conda-forge -c bioconda blast mafft iqtree
-    $ python3 -m pip install -U automlsa2
+The ``--install_deps`` option has been removed; install the external
+programs with conda as shown above. Programs previously installed by
+``--install_deps`` in ``~/.local/external`` are no longer used automatically
+and that directory can be deleted. To keep using programs installed in a
+specific directory, pass it with ``--external``.
 
 Dependencies
 ------------
@@ -188,57 +223,63 @@ phylum with multiple reference genomes being used.
 Usage
 -----
 
-.. code-block:: bash
+.. code-block:: text
 
     $ automlsa2 -h
     usage: automlsa2 [-h] [--query QUERY [QUERY ...]] [--files FILES [FILES ...]]
-                 [--dir DIR [DIR ...]] [-e EVALUE] [-c COVERAGE] [-i IDENTITY]
-                 [-p {blastn,tblastn}] [--config CONFIG] [--missing_check]
-                 [-t THREADS] [--dups] [--allow_missing ALLOW_MISSING]
-                 [--outgroup OUTGROUP] [--protect]
-                 [--checkpoint {validate,preblast,filtering,prealign,postalign,nexus,none}]
-                 [--external EXTERNAL] [--mafft MAFFT] [--iqtree IQTREE]
-                 [--debug] [--version] [--quiet]
-                 runid
+                     [--dir DIR [DIR ...]] [-e EVALUE] [-c COVERAGE] [-i IDENTITY]
+                     [-p {blastn,tblastn}] [--config CONFIG] [--missing_check]
+                     [-t THREADS] [--dups] [--allow_missing ALLOW_MISSING]
+                     [--outgroup OUTGROUP] [--protect]
+                     [--checkpoint {validate,preblast,filtering,prealign,postalign,nexus,none}]
+                     [--external EXTERNAL] [--mafft MAFFT] [--iqtree IQTREE] [--debug]
+                     [--version] [--quiet]
+                     runid
 
     This is a rewrite of autoMLSA.pl. Generates automated multi-locus sequence analyses.
 
     positional arguments:
       runid                 Name of the run directory.
 
-optional arguments:
-
--h, --help                        show this help message and exit
---query <QUERY [QUERY ...]>       Path to file with input seq(s).
---files <FILES [FILES ...]>       Path to the target genome FASTA files.
---dir <DIR [DIR ...]>             Path to the target genome directory with FASTA files.
--e EVALUE, --evalue EVALUE        E-value cutoff for BLAST searches. [1e-5]
--c COVERAGE, --coverage COVERAGE  Sets the coverage cut-off threshold. [50]
--i IDENTITY, --identity IDENTITY  Sets the identity cut-off threshold. [30]
--p PROGRAM, --program PROGRAM     Which BLAST program to run. [tblastn] {tblastn, blastn}
---config CONFIG                   Path to configuration json file to copy.
---missing_check                   Use this to confirm that settings have been
-                                  checked when genes are missing.
--t THREADS, --threads THREADS     Number of threads to use. [1]
---dups                            Allow for duplicate query names for more sequence
-                                  coverage across disparate organisms.
---allow_missing ALLOW_MISSING     Allow for N missing genes per genome. [0]
---outgroup OUTGROUP               Name of outgroup genome (file name or strain) to root on.
-                                  Separate multiple genomes with commas.
---protect                         Save files from getting overwritten. By default, as input
-                                  files update, older alignments and trees are deleted.
---checkpoint CHECKPOINT           Name of stage to stop computing on. [none]
-                                  {validate,preblast,filtering,prealign,postalign,nexus,none}
---external EXTERNAL               Directory with external programs to use before those in $PATH.
---mafft MAFFT                     mafft settings [--localpair --maxiterate 1000 --reorder]
---iqtree IQTREE                   iqtree settings [-m MFP -B 1000 --alrt 1000 --msub
-                                  nuclear --merge rclusterf --keep-ident]
---debug                           Turn on debugging messages.
---version                         show program's version number and exit
---quiet                           Turn off progress messages.
+    options:
+      -h, --help            show this help message and exit
+      --query QUERY [QUERY ...]
+                            Path to file with input seq(s).
+      --files FILES [FILES ...]
+                            Path to the target genome FASTA files.
+      --dir DIR [DIR ...]   Path to the target genome directory with FASTA files.
+      -e, --evalue EVALUE   E-value cutoff for BLAST searches. [1e-5]
+      -c, --coverage COVERAGE
+                            Sets the coverage cut-off threshold. [50]
+      -i, --identity IDENTITY
+                            Sets the identity cut-off threshold. [30]
+      -p, --program {blastn,tblastn}
+                            Which BLAST program to run. [tblastn]
+      --config CONFIG       Path to configuration json file to copy.
+      --missing_check       Use this to confirm that settings have been checked when genes
+                            are missing.
+      -t, --threads THREADS
+                            Number of threads to use. [1]
+      --dups                Allow for duplicate query names for more sequence coverage
+                            across disparate organisms.
+      --allow_missing ALLOW_MISSING
+                            Allow for N missing genes per genome. [0]
+      --outgroup OUTGROUP   Name of outgroup genome (file name or strain) to root on.
+                            Separate multiple genomes with commas.
+      --protect             Save files from getting overwritten. By default, as input
+                            files update, older alignments and trees are deleted.
+      --checkpoint {validate,preblast,filtering,prealign,postalign,nexus,none}
+                            Name of stage to stop computing on. [none]
+      --external EXTERNAL   Directory with external programs to use before those in $PATH.
+      --mafft MAFFT         mafft settings [--localpair --maxiterate 1000 --reorder]
+      --iqtree IQTREE       iqtree settings [-m MFP -B 1000 --alrt 1000 --msub nuclear
+                            --merge rclusterf --keep-ident]
+      --debug               Turn on debugging messages.
+      --version             show program's version number and exit
+      --quiet               Turn off progress messages.
 
 One or more input target genome FASTA files is required, either using
-``--files`` or ``--dir``. Additionally, one or more query FASTA files
+``--files`` or ``--dir``. Genome files must be uncompressed FASTA. Additionally, one or more query FASTA files
 containing one or more query gene sequences is necessary for analysis.
 
 By default, protein queries are expected, and nucleotide FASTA sequence is
@@ -276,23 +317,102 @@ Genomes can be downloaded using my ``get_assemblies`` program, here:
 https://pypi.org/project/get-assemblies/. Locally produced genomes can be
 renamed as required.
 
+To root the tree, give ``--outgroup`` the name of one of the genomes, either
+as the strain name used in the tree (the file name without its extension) or
+as the genome file name or path, e.g. ``--outgroup Escherichia_coli_K-12``
+or ``--outgroup genomes/Escherichia_coli_K-12.fna``. Several genomes can be
+given separated by commas.
+
+Missing genes and multiple copies
+---------------------------------
+
+After the BLAST searches, hits below the ``--identity`` and ``--coverage``
+cut-offs are discarded and a presence matrix of hits per genome and gene is
+written to ``presence_matrix.tsv``.
+
+* A genome missing more genes than ``--allow_missing`` (default 0) is removed
+  from the analysis. Genomes with no hits at all are reported and removed the
+  same way.
+* Genes missing from more than half of the genomes are listed as candidates
+  for removal from the query file.
+* If any genome is missing genes, the run stops so you can review the
+  results. Re-run with ``--missing_check`` to continue with the genomes that
+  were kept.
+
+When a genome has more than one hit for a gene (e.g. multi-copy genes such as
+16S rRNA, or several query sequences sharing one gene name), only the best hit
+is used: the one with the highest bitscore, then the highest query coverage.
+
+Output files
+------------
+
+All files are written to the run directory (``runID``). The main results are:
+
+* ``runID.nex.treefile`` - the final maximum-likelihood tree (Newick), with
+  SH-aLRT and ultrafast bootstrap support values on each branch
+  (``SH-aLRT/UFBoot``).
+* ``runID.nex.contree`` - the bootstrap consensus tree.
+* ``runID.nex.iqtree`` - the IQ-TREE report, including the selected models
+  and partitioning scheme.
+* ``runID.nex.splits.nex`` - bootstrap support for splits, e.g. for viewing
+  as a network in SplitsTree.
+* ``runID.nex.log`` - the IQ-TREE log.
+* ``presence_matrix.tsv`` - number of BLAST hits per genome and gene.
+* ``blast_summary.json``, ``missing_by_genome.json``, ``missing_counts.json``
+  - summaries of missing genes per genome and per gene.
+* ``aligned/`` - the per-gene alignments, and ``runID.nex``, the partition
+  file pointing to them.
+* ``runID.log`` - the automlsa2 log.
+
+Intermediate files are kept in ``fasta/`` (renamed genomes and BLAST
+databases), ``queries/``, ``blast/``, ``unaligned/``, and ``.autoMLSA/``.
+
+Re-running and resuming
+-----------------------
+
+Running the same command again with the same ``runID`` resumes the analysis,
+skipping steps that are already done. This also applies after stopping a run
+with Ctrl-C or with ``--checkpoint``. Settings are saved in
+``runID/config.json`` and reused, so later runs only need the options you want
+to change.
+
+When inputs or settings change, the affected steps are redone automatically:
+
+* Adding, removing, or changing genomes or query sequences redoes the
+  affected BLAST searches and everything after them.
+* Changing ``--evalue`` or ``--program`` redoes all BLAST searches.
+* Changing ``--identity``, ``--coverage``, ``--allow_missing``, ``--mafft``,
+  or ``--iqtree`` redoes the filtering, alignments, and tree.
+
+Previous nexus and tree files are moved to a timestamped folder under
+``backup/``. Use ``--protect`` to stop instead of deleting or moving any
+results.
+
 Running Tests
 -------------
 
-The test data are included in a separate repository -
-https://github.com/davised/automlsa2-examples
+Unit and property-based tests (using pytest and hypothesis) do not need the
+external programs and run in a few seconds:
+
+.. code-block:: bash
+
+    $ python3 -m pip install -e '.[test]'
+    $ python3 -m pytest
+
+An end-to-end test runs the full pipeline on example data, which is included
+in a separate repository - https://github.com/davised/automlsa2-examples
 
 To download this test data, you can run ``git submodule update --init``.
 
 Alternatively, you can run the ``run_tests.sh`` script and it will download
 the git submodule for you and run the test command.
 
-The tests should take about 2-3 minutes with 4 CPUs.
+The end-to-end test takes about 2-3 minutes with 4 CPUs.
 
 TODO
 ----
 
-☐ Write detailed list of intermediate files.
+☑ Write list of output files.
 
 ☐ Compare functionality of this version to prior autoMLSA.pl version.
 
@@ -302,7 +422,7 @@ Contributing
 ------------
 
 Bug reports are encouraged! Submit a github issue and I'll be happy to take
-a look. Also, feel free to clone and submit merge requests.
+a look. Also, feel free to fork and submit pull requests.
 
 Author Contact
 --------------

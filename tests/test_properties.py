@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Property-based tests using hypothesis."""
+
 import argparse
 import contextlib
 import json
@@ -60,7 +61,9 @@ def rundir():
 version_parts = st.lists(st.integers(0, 999), min_size=2, max_size=4)
 
 
-@given(parts=version_parts, program=st.sampled_from(['tblastn', 'blastn', 'makeblastdb']))
+@given(
+    parts=version_parts, program=st.sampled_from(['tblastn', 'blastn', 'makeblastdb'])
+)
 def test_blast_version_roundtrip(parts, program):
     ver = '.'.join(map(str, parts))
     out = '{}: {}+\n Package: blast {}, build Jan 1 2026 00:00:00\n'.format(
@@ -398,9 +401,7 @@ def test_config_reconciliation(cli, saved, allow_missing):
         if saved is not None:
             config['protect'] = saved
             config['missing_check'] = saved
-        args = make_args(
-            tmp, protect=cli, missing_check=bool(cli), allow_missing=None
-        )
+        args = make_args(tmp, protect=cli, missing_check=bool(cli), allow_missing=None)
         args = validate_arguments(args, config, False)
     expected = bool(cli) or bool(saved)
     assert args.protect is expected

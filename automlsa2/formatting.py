@@ -277,9 +277,9 @@ def get_queries(
     else:
         expected_queries = []
 
-    updated: bool = os.path.exists(expected_queries_fn) and set(expected_queries) != set(
-        new_queries
-    )
+    updated: bool = os.path.exists(expected_queries_fn) and set(
+        expected_queries
+    ) != set(new_queries)
     if updated:
         if all(query in new_queries for query in expected_queries):
             logger.debug('Found new query sequences')

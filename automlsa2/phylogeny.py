@@ -64,9 +64,7 @@ def check_outgroup(outgroup: str, labels: List[str], blastout: pd.DataFrame) -> 
     logger = logging.getLogger(__name__)
     if not outgroup:
         return outgroup
-    taxa = {
-        os.path.splitext(labels[int(i)])[0] for i in blastout['sseqid'].astype(str)
-    }
+    taxa = {os.path.splitext(labels[int(i)])[0] for i in blastout['sseqid'].astype(str)}
     names: List[str] = []
     for name in outgroup.split(','):
         name = name.strip()
@@ -76,7 +74,9 @@ def check_outgroup(outgroup: str, labels: List[str], blastout: pd.DataFrame) -> 
         if name not in taxa:
             msg = 'Outgroup {} is not one of the genomes in the analysis.'
             logger.error(msg.format(name))
-            msg = 'Use a genome name from presence_matrix.tsv without its file extension.'
+            msg = (
+                'Use a genome name from presence_matrix.tsv without its file extension.'
+            )
             logger.error(msg)
             end_program(78)
         names.append(name)
