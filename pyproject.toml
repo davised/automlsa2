@@ -37,7 +37,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest"]
+test = ["pytest", "hypothesis"]
 
 [project.urls]
 Homepage = "https://github.com/davised/automlsa2"
